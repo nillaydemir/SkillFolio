@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Admin Yönetim Paneli";
+}
+
+<h1 class="display-4 text-danger">@ViewData["Title"]</h1>
+<p class="lead">Hoş geldiniz, Admin. Yönetim görevlerinizi buradan gerçekleştirebilirsiniz.</p>
+
+<div class="row mt-5">
+
+    <div class="col-md-4 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Etkinlik Yönetimi</h5>
+                <p class="card-text">Yeni etkinlik ekleyin, mevcut etkinlikleri düzenleyin veya silin.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary">Git</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title text-success">Duyuru Gönder</h5>
+                <p class="card-text">Okul duyuru gruplarına yeni mesaj gönderin.</p>
+                <a asp-controller="Admin" asp-action="PostAnnouncement" class="btn btn-outline-success">Duyuru Gönder</a>
+            </div>
+        </div>
+    </div>
+
+</div>

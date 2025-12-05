@@ -1,0 +1,33 @@
+﻿@model SkillFolio.Models.Event
+
+@{
+    ViewData["Title"] = "Silme Onayı";
+}
+
+<h1 class="display-5 text-danger">Silme Onayı</h1>
+
+<h3>Bu etkinliği kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</h3>
+<hr />
+
+<div class="alert alert-warning" role="alert">
+    <strong>@Model.Title</strong> - (@Model.Category.Name)
+</div>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Title)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Title)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Category)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Category.Name)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.DatePosted)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.DatePosted)</dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="EventId" />
+        <input type="submit" value="Silme İşlemini Onayla" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+    </form>
+</div>
