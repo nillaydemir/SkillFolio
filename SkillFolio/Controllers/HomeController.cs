@@ -1,25 +1,36 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SkillFolio.Models;
-
+using Microsoft.EntityFrameworkCore;
+using SkillFolio.Data;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity; 
 namespace SkillFolio.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly SkillFolioDbContext _context; // Alan tanýmlý
+
+        // KURUCU: Dependency Injection ile DbContext alýnýyor.
+        public HomeController(SkillFolioDbContext context)
         {
-            return View();
+            _context = context; // Veri atamasý yapýlýyor (Null hatasý çözüldü)
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // Veritabanýndan veri çekme, _context null olmayacaktýr.
+            var featuredEvents = await _context.Events
+                .Include(e => e.Category)
+                .OrderByDescending(e => e.DatePosted)
+                .Take(3)
+                .ToListAsync();
+
+            return View(featuredEvents);
         }
 
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

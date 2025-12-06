@@ -1,0 +1,120 @@
+﻿@model SkillFolio.Models.ApplicationUser
+@using System.Text.Json
+@using Microsoft.AspNetCore.Identity;
+@using System.Linq
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Profilim ve Sertifikalarım";
+
+    // Controller'dan gelen listeyi güvenli bir şekilde List<dynamic> tipine dönüştürme
+    var calendarEvents = ViewBag.CalendarEvents as List<dynamic> ?? new List<dynamic>();
+    var jsonEvents = Json.Serialize(calendarEvents);
+}
+
+<h1 class="display-5 text-primary">Merhaba, @Model.FirstName @Model.LastName</h1>
+<hr />
+
+<div class="row pt-3">
+
+    <div class="col-md-5">
+
+        <div class="card profile-card shadow p-4 mb-4 border-0">
+            <h5 class="fw-bold">Personal Information <i class="fas fa-user-circle"></i></h5>
+            <hr class="my-2" />
+            <dl class="row mt-3 small">
+                <dt class="col-sm-5">Ad Soyad:</dt>
+                <dd class="col-sm-7">@Model.FirstName @Model.LastName</dd>
+
+                <dt class="col-sm-5">Okul/Bölüm:</dt>
+                <dd class="col-sm-7">@Model.SchoolName / @Model.Department</dd>
+
+                <dt class="col-sm-5">Eğitim Yılları:</dt>
+                <dd class="col-sm-7">@Model.StartYear - @(Model.EndYear.HasValue? Model.EndYear.ToString() : "Devam")</dd>
+
+                <dt class="col-sm-5">Doğum Tarihi:</dt>
+                <dd class="col-sm-7">@Model.BirthDate.ToShortDateString()</dd>
+            </dl>
+            <a href="#" class="btn btn-sm btn-outline-secondary mt-2">Profili Düzenle</a>
+        </div>
+
+        <div class="card p-4 shadow-sm border-0">
+            <h5 class="text-primary">📅 Planlayıcı</h5>
+            <div id="calendarDisplay" style="min-height: 250px; background-color: #ffffff;">
+                <p class="text-muted small mt-2">Takvimde favorilenen etkinlikler ve sertifika yüklenen etkinlikler işaretlenir.</p>
+
+                <p>Favorilenen Etkinlik Sayısı: @calendarEvents.Count</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+
+        <div class="card p-4 shadow-sm border-success mb-4">
+            <h5 class="text-success">✅ Sertifikalı/Katılım Onaylı Etkinlikler (@(Model.Certificates?.Count ?? 0))</h5>
+            <hr />
+            <div class="row">
+                @if (Model.Certificates != null && Model.Certificates.Any())
+                {
+                    @foreach (var cert in Model.Certificates)
+                    {
+                        <div class="col-6 mb-3">
+                            <div class="card bg-light border-success h-100 p-2">
+                                <strong class="text-truncate">@cert.Event?.Title</strong>
+                                <small class="text-muted">Sertifika: @cert.Title</small>
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@cert.EventId" class="btn btn-sm btn-outline-success mt-2">Detay/Yorum Yap</a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info small">Henüz katılım onayı eklenmiş etkinliğiniz yok.</div>
+                }
+            </div>
+        </div>
+
+        <div class="card p-4 shadow-sm border-danger mb-4">
+            <h5 class="text-danger">❤️ Favorilenen Etkinlikler (@(Model.Favorites?.Count ?? 0))</h5>
+            <hr />
+            <div class="row">
+                @if (Model.Favorites != null && Model.Favorites.Any())
+                {
+                    @foreach (var fav in Model.Favorites)
+                    {
+                        <div class="col-6 mb-3">
+                            <div class="card bg-light border-danger h-100 p-2">
+                                <strong class="text-truncate">@fav.Event?.Title</strong>
+                                <small class="text-muted">Favorileme Tarihi: @fav.DateFavorited.ToShortDateString()</small>
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@fav.EventId" class="btn btn-sm btn-outline-danger mt-2">Detay Gör</a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info small">Favori listeniz boş.</div>
+                }
+            </div>
+        </div>
+
+        <div class="card p-4 shadow-sm border-0 profile-card">
+            <h5 class="text-secondary">Önerilen Eğitimler (Recommended Trainings)</h5>
+            <p class="text-muted">Profil bilgilerine (Bölüm, Okul) göre sistemin önerdiği etkinlikler burada listelenecektir.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // JS ile takvim verilerini kullanmak için
+        const eventData = @Html.Raw(jsonEvents);
+
+        if (eventData.length > 0) {
+            console.log("Takvimde işaretlenecek etkinlikler:", eventData);
+        }
+    </script>
+}
