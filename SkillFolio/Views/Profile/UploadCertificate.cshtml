@@ -1,0 +1,48 @@
+﻿@model SkillFolio.ViewModels.CertificateUploadViewModel
+
+@{
+    ViewData["Title"] = "Sertifika Yükle";
+}
+
+<h1 class="display-5">Yeni Sertifika Yükle</h1>
+<p class="lead">Lütfen tamamladığınız eğitimlere ait sertifika dosyasını yükleyin ve bağlı olduğu etkinliği seçin.</p>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="UploadCertificate" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EventId" class="control-label"></label>
+                <select asp-for="EventId" class="form-control" asp-items="ViewBag.EventId">
+                    <option value="">-- Etkinlik Seçiniz --</option>
+                </select>
+                <span asp-validation-for="EventId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="CertificateFile" class="control-label"></label>
+                <input asp-for="CertificateFile" type="file" class="form-control" accept="application/pdf,image/jpeg,image/png" />
+                <span asp-validation-for="CertificateFile" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Yükle ve Kaydet" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Profile Geri Dön</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

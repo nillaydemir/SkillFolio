@@ -1,8 +1,14 @@
-﻿@model IEnumerable<SkillFolio.Models.Event>
+﻿@using Microsoft.AspNetCore.Identity
+@using SkillFolio.Models
+@inject UserManager<ApplicationUser> UserManager
+@model IEnumerable<SkillFolio.Models.Event>
 
 @{
     ViewData["Title"] = "Etkinlikleri Keşfet";
-    string isAdmin = User.IsInRole("Admin") ? "true" : "false"; // Admin kontrolü
+
+    // Admin yetkilendirmesi için kullanıcı ve rol kontrolü
+    ApplicationUser currentUser = await UserManager.GetUserAsync(User);
+    bool isAdmin = (currentUser != null && await UserManager.IsInRoleAsync(currentUser, "Admin"));
 }
 
 <div class="header-banner text-center py-5 mb-5" style="background: linear-gradient(to right, #f87968, #ffb3a7);">
@@ -10,27 +16,32 @@
 
     <form asp-controller="Events" asp-action="Index" method="get" class="mx-auto" style="max-width: 900px;">
         <div class="input-group">
-            <input type="text" name="SearchString" value="@ViewData["CurrentSearch"]" class="form-control form-control-lg" placeholder="Katılmak istediğin etkinliği ara" aria-label="Arama" />
-            <select class="form-select form-select-lg w-auto">
+            <input type="text" name="SearchString" value="@ViewData["CurrentSearch"]" class="form-control form-control-lg" placeholder="Katılmak istediğin etkinliği ara (Başlık, Kategori, Açıklama)" aria-label="Arama" />
+
+            <select class="form-select form-select-lg w-auto" disabled>
                 <option selected>Lokasyon</option>
             </select>
-            <select class="form-select form-select-lg w-auto">
-                <option selected>Tarih</option>
+            <select name="sortOrder" class="form-select form-select-lg w-auto">
+                <option value="">Sırala (Varsayılan)</option>
+                <option value="Date">Tarih (Eskiden Yeniye)</option>
+                <option value="date_desc">Tarih (Yeniden Eskiye)</option>
+                <option value="title_desc">Başlık (Z-A)</option>
             </select>
+
             <button type="submit" class="btn btn-primary btn-lg">Ara</button>
+            <a asp-action="Index" class="btn btn-secondary btn-lg">Temizle</a>
         </div>
     </form>
 </div>
 
 <div class="container d-flex justify-content-center mb-5">
     <a href="@Url.Action("Index", "Events")" class="btn btn-outline-primary mx-1 active">Tüm Etkinlikler</a>
-    <a href="#" class="btn btn-outline-secondary mx-1">Buluşma</a>
-    <a href="#" class="btn btn-outline-secondary mx-1">Gezi</a>
-    <a href="#" class="btn btn-outline-secondary mx-1">Sohbet</a>
-    <a href="#" class="btn btn-outline-secondary mx-1">Zirve</a>
+    <a href="#" class="btn btn-outline-secondary mx-1" disabled>Zirve</a>
+    <a href="#" class="btn btn-outline-secondary mx-1" disabled>Buluşma</a>
+    <a href="#" class="btn btn-outline-secondary mx-1" disabled>Sohbet</a>
 </div>
 
-@if (isAdmin == "true")
+@if (isAdmin)
 {
     <div class="d-flex justify-content-end mb-3">
         <a asp-action="Create" class="btn btn-warning">
@@ -45,9 +56,10 @@
         <div class="col-md-4 mb-4">
             <div class="card event-card shadow-sm h-100">
                 <img src="~/images/default_event.jpg" class="card-img-top" alt="@item.Title" style="height: 180px; object-fit: cover;">
+
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@item.Title</h5>
-                    <p class="card-text mb-2">@item.Description.Substring(0, Math.Min(item.Description.Length, 100))... </p>
+                    <p class="card-text mb-2">@(item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description) </p>
 
                     <small class="text-muted mt-auto">
                         <i class="fas fa-calendar-alt"></i> Tarih: @item.DatePosted.ToShortDateString()
@@ -58,7 +70,7 @@
                     <div class="mt-3">
                         <a asp-action="Details" asp-route-id="@item.EventId" class="btn btn-primary btn-sm">Detay Gör & Katıl</a>
 
-                        @if (isAdmin == "true")
+                        @if (isAdmin)
                         {
                             <a asp-action="Edit" asp-route-id="@item.EventId" class="btn btn-warning btn-sm">Düzenle</a>
                             <a asp-action="Delete" asp-route-id="@item.EventId" class="btn btn-danger btn-sm">Sil</a>
@@ -75,4 +87,11 @@
     <div class="alert alert-info text-center mt-5">
         Seçilen filtreye uygun etkinlik bulunamadı.
     </div>
+}
+
+@section Scripts {
+    @{
+        // İstemci taraflı doğrulama scriptleri için
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -9,7 +9,7 @@ namespace SkillFolio.Models
 
         [Key]
         public int EventId { get; set; }
-
+        public ICollection<Comment>? Comments { get; set; }
         // Gerekli Özellik 1: Başlık (Part 2: 3 ek özellik)
         [Required(ErrorMessage = "Etkinlik Başlığı zorunludur.")]
         [StringLength(200)]

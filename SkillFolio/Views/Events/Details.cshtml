@@ -1,35 +1,146 @@
 ﻿@model SkillFolio.Models.Event
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using SkillFolio.Data
+@using SkillFolio.Models
+@using System.Linq
+@inject UserManager<ApplicationUser> UserManager
+@inject SkillFolioDbContext Context
 
 @{
     ViewData["Title"] = @Model.Title;
+
+    bool isAuthenticated = User.Identity.IsAuthenticated;
+    string currentUserId = string.Empty;
+    bool isFavorited = false;
+    bool canComment = false;
+
+    if (isAuthenticated)
+    {
+        currentUserId = UserManager.GetUserId(User);
+
+        // Favori kontrolü
+        isFavorited = await Context.Favorites.AnyAsync(f => f.EventId == Model.EventId && f.ApplicationUserId == currentUserId);
+
+        // Yorum yetkisi kontrolü: Sertifika yüklenmiş mi?
+        canComment = await Context.Certificates
+            .AnyAsync(c => c.ApplicationUserId == currentUserId && c.EventId == Model.EventId);
+    }
+
+    bool isAdmin = User.IsInRole("Admin");
+
+    // Yorumları yükle (Kullanıcı adlarını çekmek için)
+    // Model'e dahil edilmediyse burada çekilmelidir, ancak Controller'ın (EventsController) bunu yapması daha iyidir.
+    // Varsayım: Comments, Controller'dan Eager Loading ile gelmiştir.
+    var comments = Model.Comments?.OrderByDescending(c => c.DatePosted).ToList() ?? new List<Comment>();
 }
 
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h1 class="display-4 text-primary">@Model.Title</h1>
+<div class="row pt-4">
+    <div class="col-md-8">
+        <h1 class="display-5 text-primary">@Model.Title</h1>
         <p class="lead text-muted">Kategori: @Model.Category.Name</p>
         <hr />
 
-        <div class="mb-4">
-            <a href="@Model.SourceLink" target="_blank" class="btn btn-lg btn-success">
-                <i class="fas fa-external-link-alt"></i> Etkinliğe Katıl!
-            </a>
-        </div>
-
-        <h3>Açıklama</h3>
+        <h3>Detaylı Açıklama</h3>
         <p class="text-break">@Model.Description</p>
 
         <dl class="row mt-4 border p-3 rounded bg-light">
-            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.SourceLink)</dt>
-            <dd class="col-sm-8"><a href="@Model.SourceLink" target="_blank">@Model.SourceLink</a></dd>
-
             <dt class="col-sm-4">@Html.DisplayNameFor(model => model.DatePosted)</dt>
             <dd class="col-sm-8">@Html.DisplayFor(model => model.DatePosted)</dd>
         </dl>
     </div>
+
+    <div class="col-md-4 text-center">
+        <div class="card p-4 shadow-sm border-0">
+
+            <div class="mb-3">
+                @if (isAuthenticated)
+                {
+                    <a href="@Model.SourceLink" target="_blank" class="btn btn-lg btn-success w-100 mb-2">
+                        <i class="fas fa-external-link-alt"></i> Etkinliğe Katıl!
+                    </a>
+                    <small class="text-success">Kaynak linki aktif.</small>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Details", new { id = Model.EventId })"
+                       class="btn btn-lg btn-warning w-100 mb-2">
+                        <i class="fas fa-user-lock"></i> Katılmak İçin Giriş Yapın
+                    </a>
+                    <small class="text-warning">Kaynak linki görmek için giriş yapmalısınız.</small>
+                }
+            </div>
+
+            @if (isAuthenticated)
+            {
+                <form asp-controller="Events" asp-action="ToggleFavorite" method="post">
+                    <input type="hidden" name="eventId" value="@Model.EventId" />
+                    <button type="submit" class="btn btn-block @(isFavorited ? "btn-danger" : "btn-outline-danger") w-100">
+                        <i class="fas fa-heart"></i> @(isFavorited ? "Favorilerden Çıkar" : "Favorile")
+                    </button>
+                </form>
+            }
+        </div>
+
+        @if (isAdmin)
+        {
+            <div class="mt-3">
+                <a asp-action="Edit" asp-route-id="@Model?.EventId" class="btn btn-sm btn-warning">Düzenle</a>
+                <a asp-action="Delete" asp-route-id="@Model?.EventId" class="btn btn-sm btn-danger">Sil</a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-5">
+    <h2>Yorumlar</h2>
+    <hr />
+
+    @if (TempData["CommentError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["CommentError"]</div>
+    }
+
+    @if (isAuthenticated && canComment)
+    {
+        <div class="p-3 mb-4 border rounded">
+            <h5>Yorumunuzu Ekleyin:</h5>
+            <form asp-controller="Events" asp-action="AddComment" method="post">
+                <input type="hidden" name="EventId" value="@Model.EventId" />
+                <textarea name="Content" class="form-control mb-2" rows="3" placeholder="Yorumunuz..."></textarea>
+                <button type="submit" class="btn btn-sm btn-primary">Gönder</button>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </form>
+        </div>
+    }
+    else if (isAuthenticated && !canComment)
+    {
+        <div class="alert alert-info">Yorum yapabilmek için önce bu etkinliğe ait sertifikanızı yüklemelisiniz.</div>
+    }
+    else
+    {
+        <div class="alert alert-info">Yorum yapmak için giriş yapınız.</div>
+    }
+
+    @if (comments.Any())
+    {
+        @foreach (var comment in comments)
+        {
+            <div class="card card-body mb-3 shadow-sm">
+                <p class="mb-1">
+                    <strong>@comment.User?.UserName</strong>
+                    <small class="text-muted">(@comment.DatePosted.ToShortDateString())</small>
+                </p>
+                <p>@comment.Content</p>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">Bu etkinlik için henüz yorum yapılmamıştır.</p>
+    }
 </div>
 
 <div class="mt-4">
-    <a asp-action="Edit" asp-route-id="@Model?.EventId" class="btn btn-warning">Düzenle</a> |
     <a asp-action="Index" class="btn btn-secondary">Tüm Etkinliklere Geri Dön</a>
 </div>
