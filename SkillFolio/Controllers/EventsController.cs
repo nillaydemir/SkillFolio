@@ -1,31 +1,35 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity; // UserManager için gerekli
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
+using SkillFolio.ViewModels; // Yeni eklendi
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting; // IWebHostEnvironment için
+using System.IO; // Dosya işlemleri için
 
 namespace SkillFolio.Controllers
 {
     public class EventsController : Controller
     {
         private readonly SkillFolioDbContext _context;
-        // KRİTİK EKLENTİ: Favorileme için UserManager tanımlandı
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _hostEnvironment; // YENİ EKLENDİ
 
-        // KURUCU: Hem DbContext hem de UserManager enjekte edildi.
-        public EventsController(SkillFolioDbContext context, UserManager<ApplicationUser> userManager)
+        // KURUCU: DbContext, UserManager ve IWebHostEnvironment enjekte edildi.
+        public EventsController(SkillFolioDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            _hostEnvironment = hostEnvironment;
         }
 
-        // 1. READ (List) - Part 4: Arama ve Sıralama
+        // 1. READ (List)
         [AllowAnonymous]
         public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
@@ -35,12 +39,11 @@ namespace SkillFolio.Controllers
 
             var events = _context.Events.Include(e => e.Category).AsQueryable();
 
-            // Arama ve Sıralama Mantığı...
             if (!String.IsNullOrEmpty(searchString))
             {
                 events = events.Where(s => s.Title.Contains(searchString)
-                                        || s.Description.Contains(searchString)
-                                        || s.Category.Name.Contains(searchString));
+                                         || s.Description.Contains(searchString)
+                                         || s.Category!.Name.Contains(searchString));
             }
 
             switch (sortOrder)
@@ -72,19 +75,11 @@ namespace SkillFolio.Controllers
             {
                 var userId = _userManager.GetUserId(User);
 
-                // 1. Sertifika Kontrolü (Katılım)
-                bool hasCertificate = await _context.Certificates
-                    .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
+                bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
+                bool hasCommented = await _context.Comments.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
 
-                // 2. Yorum Kontrolü (Tek Yorum Kısıtlaması)
-                bool hasCommented = await _context.Comments
-                    .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
-
-                // View'e gönderilecek bayraklar
                 ViewBag.HasCertificate = hasCertificate;
                 ViewBag.HasCommented = hasCommented;
-
-                // Yorum yapma yetkisi: Sertifika var VE daha önce yorum yapmamış
                 ViewBag.CanComment = hasCertificate && !hasCommented;
             }
             else
@@ -102,23 +97,41 @@ namespace SkillFolio.Controllers
         public IActionResult Create()
         {
             ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name");
-            return View();
+            return View(new EventViewModel()); // ViewModel gönderiliyor
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,SourceLink,CategoryId")] Event @event)
+        public async Task<IActionResult> Create(EventViewModel model) // ViewModel kullanıldı
         {
             if (ModelState.IsValid)
             {
-                @event.DatePosted = System.DateTime.Now;
+                string imagePath = string.Empty;
+
+                // Fotoğraf Yükleme İşlemi
+                if (model.ImageFile != null)
+                {
+                    imagePath = await SaveImageFile(model.ImageFile);
+                }
+
+                var @event = new Event
+                {
+                    Title = model.Title,
+                    Description = model.Description,
+                    SourceLink = model.SourceLink,
+                    CategoryId = model.CategoryId,
+                    ImagePath = imagePath, // Yolu kaydet
+                    DatePosted = DateTime.Now
+                };
+
                 _context.Add(@event);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", @event.CategoryId);
-            return View(@event);
+
+            ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", model.CategoryId);
+            return View(model);
         }
 
         // 4. UPDATE (GET/POST) - SADECE Admin
@@ -128,18 +141,53 @@ namespace SkillFolio.Controllers
             if (id == null) return NotFound();
             var @event = await _context.Events.FindAsync(id);
             if (@event == null) return NotFound();
+
+            // Event modelini ViewModel'e dönüştür
+            var viewModel = new EventViewModel
+            {
+                EventId = @event.EventId,
+                Title = @event.Title,
+                Description = @event.Description,
+                SourceLink = @event.SourceLink,
+                CategoryId = @event.CategoryId,
+                ExistingImagePath = @event.ImagePath
+            };
+
             ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", @event.CategoryId);
-            return View(@event);
+            return View(viewModel); // ViewModel gönderildi
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventId,Title,Description,SourceLink,DatePosted,CategoryId")] Event @event)
+        public async Task<IActionResult> Edit(int id, EventViewModel model) // ViewModel kullanıldı
         {
-            if (id != @event.EventId) return NotFound();
+            if (id != model.EventId) return NotFound();
+
             if (ModelState.IsValid)
             {
+                var @event = await _context.Events.FindAsync(id);
+                if (@event == null) return NotFound();
+
+                string newImagePath = @event.ImagePath ?? string.Empty;
+
+                // 1. Yeni Fotoğraf Yükleme ve Eski Fotoğrafı Silme
+                if (model.ImageFile != null)
+                {
+                    // Eski fotoğrafı sil
+                    DeleteImageFile(@event.ImagePath);
+
+                    // Yeni fotoğrafı kaydet
+                    newImagePath = await SaveImageFile(model.ImageFile);
+                }
+
+                // 2. Modeli Güncelleme
+                @event.Title = model.Title;
+                @event.Description = model.Description;
+                @event.SourceLink = model.SourceLink;
+                @event.CategoryId = model.CategoryId;
+                @event.ImagePath = newImagePath; // Yolu güncelle
+
                 try
                 {
                     _context.Update(@event);
@@ -152,59 +200,109 @@ namespace SkillFolio.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", @event.CategoryId);
-            return View(@event);
+
+            ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", model.CategoryId);
+            return View(model);
         }
 
-        // 5. DELETE (GET/POST) - SADECE Admin
+        // 5. DELETE (POST) - SADECE Admin
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(int? id)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (id == null) return NotFound();
-            var @event = await _context.Events.Include(e => e.Category).FirstOrDefaultAsync(m => m.EventId == id);
-            if (@event == null) return NotFound();
-            return View(@event);
+            var @event = await _context.Events.FindAsync(id);
+            if (@event != null)
+            {
+                // İlişkili fotoğrafı sunucudan sil
+                DeleteImageFile(@event.ImagePath);
+
+                // Veritabanından sil
+                _context.Events.Remove(@event);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
+
+        // ------------------------------------
+        // YARDIMCI METOTLAR (Helper Methods)
+        // ------------------------------------
+
+        // Dosyayı wwwroot/images/events klasörüne kaydeder
+        private async Task<string> SaveImageFile(Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            string wwwRootPath = _hostEnvironment.WebRootPath;
+            string uploadsFolder = Path.Combine(wwwRootPath, "images", "events");
+
+            // Klasör yoksa oluştur
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            string extension = Path.GetExtension(file.FileName);
+            string fileName = Guid.NewGuid().ToString() + extension;
+
+            // DB'ye kaydedilecek göreceli yol
+            string relativePath = $"/images/events/{fileName}";
+            string path = Path.Combine(uploadsFolder, fileName);
+
+            using (var fileStream = new FileStream(path, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            return relativePath;
+        }
+
+        // Eski fotoğrafı sunucudan siler
+        private void DeleteImageFile(string? imagePath)
+        {
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                string wwwRootPath = _hostEnvironment.WebRootPath;
+                string oldPath = Path.Combine(wwwRootPath, imagePath.TrimStart('/'));
+
+                if (System.IO.File.Exists(oldPath))
+                {
+                    System.IO.File.Delete(oldPath);
+                }
+            }
+        }
+
+        // ... (Yorum ve Favorileme Metotları aynı kalır) ...
+
+        // Yorum Gönderme Modeli
         public class CommentViewModel
         {
-            [Required]
-            public int EventId { get; set; }
-
+            [Required] public int EventId { get; set; }
             [Required]
             [StringLength(500, MinimumLength = 5, ErrorMessage = "Yorum 5 ile 500 karakter arasında olmalıdır.")]
             [Display(Name = "Yorumunuz")]
             public string Content { get; set; } = string.Empty;
         }
 
-        // Yorumu kaydetme (Sadece giriş yapmış kullanıcılar yorum yapabilir)
+        // Yorumu kaydetme
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComment(CommentViewModel model)
         {
+            // ... (AddComment mantığı aynı kalır) ...
             var userId = _userManager.GetUserId(User);
 
-            // Sertifika kontrolü
-            bool hasCertificate = await _context.Certificates
-                .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
-
+            bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
             if (!hasCertificate)
             {
                 TempData["CommentError"] = "Yorum yapabilmek için önce bu etkinliğe ait sertifikanızı yüklemelisiniz.";
                 return RedirectToAction("Details", new { id = model.EventId });
             }
 
-            // KRİTİK EKLENTİ: TEK YORUM KONTROLÜ
-            bool hasExistingComment = await _context.Comments
-                .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
-
+            bool hasExistingComment = await _context.Comments.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
             if (hasExistingComment)
             {
                 TempData["CommentError"] = "Bu etkinliğe zaten yorum yaptınız. Tekrar yorum yapamazsınız.";
                 return RedirectToAction("Details", new { id = model.EventId });
             }
 
-            // ... (Kalan yorum kaydetme mantığı aynı kalır) ...
             if (ModelState.IsValid)
             {
                 var comment = new Comment
@@ -214,41 +312,31 @@ namespace SkillFolio.Controllers
                     Content = model.Content,
                     DatePosted = DateTime.Now
                 };
-
                 _context.Comments.Add(comment);
+
                 try
                 {
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Yorumunuz başarıyla kaydedildi!";
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     TempData["CommentError"] = "Yorum kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.";
-                    // Gerçek projede: ex detaylarını logla
                 }
             }
 
             return RedirectToAction("Details", new { id = model.EventId });
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var @event = await _context.Events.FindAsync(id);
-            if (@event != null) _context.Events.Remove(@event);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        // FAVORİ EKLEME/ÇIKARMA (Part 4)
+        // FAVORİ EKLEME/ÇIKARMA
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFavorite(int eventId)
         {
-            var userId = _userManager.GetUserId(User); // _userManager kullanılır
+            // ... (ToggleFavorite mantığı aynı kalır) ...
+            var userId = _userManager.GetUserId(User);
 
             var existingFavorite = await _context.Favorites
                 .FirstOrDefaultAsync(f => f.EventId == eventId && f.ApplicationUserId == userId);

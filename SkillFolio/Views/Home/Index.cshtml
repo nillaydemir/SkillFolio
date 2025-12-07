@@ -31,7 +31,8 @@
             {
                 <div class="col-md-4 mb-4">
                     <div class="card event-card shadow-sm h-100">
-                        <img src="https://picsum.photos/400/200?random=@item.EventId" class="card-img-top" alt="Etkinlik Resmi" style="height: 180px; object-fit: cover;">
+                        <img src="@item.ImagePath" class="card-img-top" alt="@item.Title" style="height: 180px; object-fit: cover;">
+
                         <div class="card-body">
                             <h5 class="card-title text-truncate">@item.Title</h5>
                             <p class="card-text small text-muted">@item.Category.Name | @item.DatePosted.ToShortDateString()</p>

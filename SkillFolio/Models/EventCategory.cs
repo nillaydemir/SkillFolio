@@ -23,7 +23,7 @@ namespace SkillFolio.Models
 
         // Gerekli Özellik 3: URL Dostu İsim (Slug) (Part 2: 3 ek özellik)
         // Arama/filtreleme için kullanılabilir.
-        public string Slug { get; set; }
+      //  public string Slug { get; set; }
 
         // İlişki: Bir Kategori'nin birden çok Etkinliği olabilir (One-to-Many)
         public ICollection<Event> Events { get; set; }
