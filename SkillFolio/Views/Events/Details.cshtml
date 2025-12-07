@@ -10,28 +10,26 @@
 @{
     ViewData["Title"] = @Model.Title;
 
+    // --- Controller'dan Gelen Bayrakların Güvenli Alınması ---
     bool isAuthenticated = User.Identity.IsAuthenticated;
     string currentUserId = string.Empty;
     bool isFavorited = false;
-    bool canComment = false;
+
+    // Yorum ve Buton Mantığı Kontrol Bayrakları
+    bool hasCertificate = ViewBag.HasCertificate ?? false;
+    bool hasCommented = ViewBag.HasCommented ?? false;
+    bool canComment = ViewBag.CanComment ?? false;
 
     if (isAuthenticated)
     {
         currentUserId = UserManager.GetUserId(User);
-
         // Favori kontrolü
         isFavorited = await Context.Favorites.AnyAsync(f => f.EventId == Model.EventId && f.ApplicationUserId == currentUserId);
-
-        // Yorum yetkisi kontrolü: Sertifika yüklenmiş mi?
-        canComment = await Context.Certificates
-            .AnyAsync(c => c.ApplicationUserId == currentUserId && c.EventId == Model.EventId);
     }
 
     bool isAdmin = User.IsInRole("Admin");
 
     // Yorumları yükle (Kullanıcı adlarını çekmek için)
-    // Model'e dahil edilmediyse burada çekilmelidir, ancak Controller'ın (EventsController) bunu yapması daha iyidir.
-    // Varsayım: Comments, Controller'dan Eager Loading ile gelmiştir.
     var comments = Model.Comments?.OrderByDescending(c => c.DatePosted).ToList() ?? new List<Comment>();
 }
 
@@ -54,20 +52,26 @@
         <div class="card p-4 shadow-sm border-0">
 
             <div class="mb-3">
-                @if (isAuthenticated)
-                {
-                    <a href="@Model.SourceLink" target="_blank" class="btn btn-lg btn-success w-100 mb-2">
-                        <i class="fas fa-external-link-alt"></i> Etkinliğe Katıl!
-                    </a>
-                    <small class="text-success">Kaynak linki aktif.</small>
-                }
-                else
+                @if (!isAuthenticated)
                 {
                     <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Details", new { id = Model.EventId })"
-                       class="btn btn-lg btn-warning w-100 mb-2">
+                       class="btn btn-warning w-100 mb-2 btn-lg">
                         <i class="fas fa-user-lock"></i> Katılmak İçin Giriş Yapın
                     </a>
                     <small class="text-warning">Kaynak linki görmek için giriş yapmalısınız.</small>
+                }
+
+                <a href="@Model.SourceLink" target="_blank" class="btn @(hasCertificate ? "btn-success" : "btn-primary") w-100 mb-2 btn-lg">
+                    <i class="fas fa-external-link-alt"></i> Etkinliğe Git
+                </a>
+
+                @if (hasCertificate)
+                {
+                    <small class="text-success">Bu etkinliğe ait sertifikanızı yüklediniz. ✅</small>
+                }
+                else if (isAuthenticated)
+                {
+                    <small class="text-muted">Katılımınız için henüz sertifika yüklenmedi.</small>
                 }
             </div>
 
@@ -100,26 +104,40 @@
     {
         <div class="alert alert-danger">@TempData["CommentError"]</div>
     }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
 
     @if (isAuthenticated && canComment)
     {
         <div class="p-3 mb-4 border rounded">
             <h5>Yorumunuzu Ekleyin:</h5>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
             <form asp-controller="Events" asp-action="AddComment" method="post">
                 <input type="hidden" name="EventId" value="@Model.EventId" />
                 <textarea name="Content" class="form-control mb-2" rows="3" placeholder="Yorumunuz..."></textarea>
                 <button type="submit" class="btn btn-sm btn-primary">Gönder</button>
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             </form>
         </div>
     }
-    else if (isAuthenticated && !canComment)
+    else if (isAuthenticated)
     {
-        <div class="alert alert-info">Yorum yapabilmek için önce bu etkinliğe ait sertifikanızı yüklemelisiniz.</div>
+        // Giriş yapılmış ama yorum yapma yetkisi yoksa nedenini göster
+        if (!hasCertificate)
+        {
+            <div class="alert alert-warning">Yorum yapabilmek için önce bu etkinliğe ait **sertifikanızı yüklemelisiniz** (Katılım Onayı).</div>
+        }
+       @*  else if (hasCommented)
+        {
+            <div class="alert alert-info">Bu etkinliğe **zaten yorum yaptınız**. Her etkinliğe sadece bir defa yorum yapılabilir.</div>
+        } *@
     }
     else
     {
-        <div class="alert alert-info">Yorum yapmak için giriş yapınız.</div>
+        // Giriş yapılmamışsa
+        <div class="alert alert-info">Yorum yapmak için **giriş yapınız**.</div>
     }
 
     @if (comments.Any())
@@ -128,7 +146,7 @@
         {
             <div class="card card-body mb-3 shadow-sm">
                 <p class="mb-1">
-                    <strong>@comment.User?.UserName</strong>
+                    <strong>@comment.User?.FirstName @comment.User?.LastName</strong>
                     <small class="text-muted">(@comment.DatePosted.ToShortDateString())</small>
                 </p>
                 <p>@comment.Content</p>

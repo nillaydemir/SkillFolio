@@ -1,45 +1,48 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering; // SelectList için eklendi
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Models;
 using SkillFolio.ViewModels;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 [Authorize]
 public class ProfileController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly SkillFolio.Data.SkillFolioDbContext _context;
+    private readonly IWebHostEnvironment _hostEnvironment; // Fotoğraf yükleme için eklendi
 
-    public ProfileController(UserManager<ApplicationUser> userManager, IWebHostEnvironment webHostEnvironment, SkillFolio.Data.SkillFolioDbContext context)
+    public ProfileController(UserManager<ApplicationUser> userManager, SkillFolio.Data.SkillFolioDbContext context, IWebHostEnvironment hostEnvironment)
     {
         _userManager = userManager;
-        _webHostEnvironment = webHostEnvironment;
         _context = context;
+        _hostEnvironment = hostEnvironment;
     }
 
-    // ... Index metodu aynı kalır ...
+    // GET: Profile/Index - Profil sayfasını ve verileri gösterir
     public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
 
         if (userId == null) return NotFound("Kullanıcı bulunamadı.");
 
+        // Eager Loading: Sertifikalar, Favoriler ve ilişkili Etkinlikleri yükler
         var user = await _context.Users
             .Include(u => u.Certificates)
-            .Include(u => u.Favorites!).ThenInclude(f => f.Event)
+            .Include(u => u.Favorites!)
+                .ThenInclude(f => f.Event)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (user == null) return NotFound($"Kullanıcı ID'sine sahip kullanıcı yüklenemedi: {userId}.");
+        if (user == null) return NotFound($"Kullanıcı yüklenemedi: ID '{userId}'.");
 
+        // Takvim verilerini hazırlar
         var favoritedEvents = user.Favorites?.Where(f => f.Event != null).Select(f => new { Title = f.Event!.Title + " (Favori)", Date = f.DateFavorited.Date }) ?? Enumerable.Empty<dynamic>();
         var certificatedEvents = user.Certificates?.Select(c => new { Title = c.Title + " (Sertifika)", Date = c.UploadDate.Date }) ?? Enumerable.Empty<dynamic>();
 
@@ -48,29 +51,136 @@ public class ProfileController : Controller
         return View(user);
     }
 
-    // --- UploadCertificate (GET) ---
+    // GET: Profile/Edit - Profili düzenleme formunu gösterir
+    [Authorize]
+    public async Task<IActionResult> Edit()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound($"Kullanıcı yüklenemedi.");
+        }
+
+        // Kullanıcı verilerini ViewModel'e eşle
+        var viewModel = new ProfileEditViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            SchoolName = user.SchoolName,
+            Department = user.Department,
+            BirthDate = user.BirthDate,
+            StartYear = user.StartYear,
+            EndYear = user.EndYear,
+            ExistingProfileImagePath = user.ProfileImagePath
+        };
+
+        return View(viewModel);
+    }
+
+    // POST: Profile/Edit - Profili günceller ve fotoğrafı kaydeder
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(ProfileEditViewModel model)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        // ModelState geçerli olmasa bile mevcut fotoğraf yolu korunmalı
+        if (!ModelState.IsValid)
+        {
+            model.ExistingProfileImagePath = user.ProfileImagePath;
+            return View(model);
+        }
+
+        // 1. Dosya Yükleme İşlemi (Profil Fotoğrafı)
+        if (model.ProfilePictureFile != null)
+        {
+            string wwwRootPath = _hostEnvironment.WebRootPath;
+            string extension = Path.GetExtension(model.ProfilePictureFile.FileName);
+            string fileName = Guid.NewGuid().ToString() + extension;
+
+            // DB'ye kaydedilecek göreceli yol (wwwroot'a göre)
+            user.ProfileImagePath = "/images/profile/" + fileName;
+            string path = Path.Combine(wwwRootPath, "images", "profile", fileName);
+
+            // Eski fotoğrafı silme (opsiyonel ama iyi bir pratik)
+            if (!string.IsNullOrEmpty(model.ExistingProfileImagePath))
+            {
+                string oldPath = Path.Combine(wwwRootPath, model.ExistingProfileImagePath.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath))
+                {
+                    System.IO.File.Delete(oldPath);
+                }
+            }
+
+            // Yeni fotoğrafı kaydetme
+            // Klasörün varlığını kontrol et (Gerekirse oluştur)
+            var directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory!);
+
+            using (var fileStream = new FileStream(path, FileMode.Create))
+            {
+                await model.ProfilePictureFile.CopyToAsync(fileStream);
+            }
+        }
+
+        // 2. Kullanıcı Bilgilerini Güncelleme
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.SchoolName = model.SchoolName;
+        user.Department = model.Department;
+        user.BirthDate = model.BirthDate;
+        user.StartYear = model.StartYear ?? 0; // Nullable olmayan alanlar için varsayılan değer atanmalı
+        user.EndYear = model.EndYear;
+
+        // Kullanıcıyı veritabanında güncelle
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            TempData["SuccessMessage"] = "Profiliniz başarıyla güncellendi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Identity hatalarını gösterme
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        // Hata durumunda mevcut fotoğraf yolunu tekrar View'e gönder
+        model.ExistingProfileImagePath = user.ProfileImagePath;
+        return View(model);
+    }
+
+    // --- Sertifika Yükleme Metotları ---
+
+    // GET: Profile/UploadCertificate
     public IActionResult UploadCertificate()
     {
-        // YENİ EKLENTİ: Tüm etkinlikleri View'e gönderiyoruz
         ViewBag.EventId = new SelectList(_context.Events.OrderBy(e => e.Title), "EventId", "Title");
         return View(new CertificateUploadViewModel());
     }
 
-    // --- UploadCertificate (POST) ---
+    // POST: Profile/UploadCertificate
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UploadCertificate(CertificateUploadViewModel model)
     {
+        // ... (Sertifika yükleme mantığı aynı kalır) ...
         if (ModelState.IsValid)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            // Dosya Yükleme İşlemi (Önceki kodunuzdaki gibi)
             string uniqueFileName = string.Empty;
             if (model.CertificateFile != null)
             {
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "certificates");
+                string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "certificates");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
                 uniqueFileName = Guid.NewGuid().ToString() + "_" + model.CertificateFile.FileName;
@@ -88,7 +198,6 @@ public class ProfileController : Controller
                 FilePath = uniqueFileName,
                 ApplicationUserId = user.Id,
                 UploadDate = DateTime.Now,
-                // KRİTİK EKLENTİ: Seçilen EventId'yi Certificate modeline atama
                 EventId = model.EventId
             };
 
@@ -98,7 +207,6 @@ public class ProfileController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Eğer model geçerli değilse, listeyi tekrar yükle
         ViewBag.EventId = new SelectList(_context.Events.OrderBy(e => e.Title), "EventId", "Title", model.EventId);
         return View(model);
     }

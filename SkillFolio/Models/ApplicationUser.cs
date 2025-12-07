@@ -23,7 +23,8 @@ namespace SkillFolio.Models
         [Required]
         [Display(Name = "Bölüm")]
         public string Department { get; set; } = string.Empty;
-
+        [Display(Name = "Profil Fotoğrafı Yolu")]
+        public string? ProfileImagePath { get; set; }
         [Required]
         [Display(Name = "Başlangıç Yılı")]
         public int StartYear { get; set; }

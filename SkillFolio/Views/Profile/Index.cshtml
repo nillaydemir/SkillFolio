@@ -34,7 +34,7 @@
                 <dt class="col-sm-5">Doğum Tarihi:</dt>
                 <dd class="col-sm-7">@Model.BirthDate.ToShortDateString()</dd>
             </dl>
-            <a href="#" class="btn btn-sm btn-outline-secondary mt-2">Profili Düzenle</a>
+           <a asp-controller="Profile" asp-action="Edit" class="btn btn-sm btn-outline-secondary mt-2">Profili Düzenle</a>
         </div>
 
         <div class="card p-4 shadow-sm border-0">

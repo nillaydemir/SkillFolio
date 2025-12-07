@@ -61,12 +61,39 @@ namespace SkillFolio.Controllers
             if (id == null) return NotFound();
 
             var @event = await _context.Events
-                .Include(e => e.Category) // Kategori zaten yüklü
-                .Include(e => e.Comments!) // ◀️ Yorumlar listesini dahil et
-                    .ThenInclude(c => c.User) // Yorumu yapan kullanıcının adını/bilgisini çekmek için User'ı da dahil et
+                .Include(e => e.Category)
+                .Include(e => e.Comments!)
+                    .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(m => m.EventId == id);
 
             if (@event == null) return NotFound();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = _userManager.GetUserId(User);
+
+                // 1. Sertifika Kontrolü (Katılım)
+                bool hasCertificate = await _context.Certificates
+                    .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
+
+                // 2. Yorum Kontrolü (Tek Yorum Kısıtlaması)
+                bool hasCommented = await _context.Comments
+                    .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
+
+                // View'e gönderilecek bayraklar
+                ViewBag.HasCertificate = hasCertificate;
+                ViewBag.HasCommented = hasCommented;
+
+                // Yorum yapma yetkisi: Sertifika var VE daha önce yorum yapmamış
+                ViewBag.CanComment = hasCertificate && !hasCommented;
+            }
+            else
+            {
+                ViewBag.HasCertificate = false;
+                ViewBag.HasCommented = false;
+                ViewBag.CanComment = false;
+            }
+
             return View(@event);
         }
 
@@ -157,7 +184,7 @@ namespace SkillFolio.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            // YETKİ KONTROLÜ (Aynı kalır)
+            // Sertifika kontrolü
             bool hasCertificate = await _context.Certificates
                 .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
 
@@ -167,6 +194,17 @@ namespace SkillFolio.Controllers
                 return RedirectToAction("Details", new { id = model.EventId });
             }
 
+            // KRİTİK EKLENTİ: TEK YORUM KONTROLÜ
+            bool hasExistingComment = await _context.Comments
+                .AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
+
+            if (hasExistingComment)
+            {
+                TempData["CommentError"] = "Bu etkinliğe zaten yorum yaptınız. Tekrar yorum yapamazsınız.";
+                return RedirectToAction("Details", new { id = model.EventId });
+            }
+
+            // ... (Kalan yorum kaydetme mantığı aynı kalır) ...
             if (ModelState.IsValid)
             {
                 var comment = new Comment
@@ -178,23 +216,18 @@ namespace SkillFolio.Controllers
                 };
 
                 _context.Comments.Add(comment);
-
                 try
                 {
-                    // KRİTİK: Veritabanı kaydını dene
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Yorumunuz başarıyla kaydedildi!";
                 }
                 catch (Exception ex)
                 {
-                    // Eğer bir hata oluşursa (örneğin NULL ataması)
-                    TempData["CommentError"] = "Yorum kaydedilirken bir hata oluştu: " + ex.Message;
-                    // Hata detaylarını görmek için bu satırı kullanın (Örn: Loglama)
-                    // throw; 
+                    TempData["CommentError"] = "Yorum kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.";
+                    // Gerçek projede: ex detaylarını logla
                 }
             }
 
-            // Her durumda Details sayfasına yönlendir (Hata veya Başarı Mesajı ile)
             return RedirectToAction("Details", new { id = model.EventId });
         }
 
