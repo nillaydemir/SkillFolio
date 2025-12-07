@@ -19,18 +19,20 @@
     bool hasCertificate = ViewBag.HasCertificate ?? false;
     bool hasCommented = ViewBag.HasCommented ?? false;
     bool canComment = ViewBag.CanComment ?? false;
+    bool isAdmin = User.IsInRole("Admin"); // Admin rolü kontrolü
 
-    if (isAuthenticated)
+    if (isAuthenticated && !isAdmin) // Sadece Admin olmayan kullanıcılar için bu kontrolleri yap
     {
         currentUserId = UserManager.GetUserId(User);
         // Favori kontrolü
         isFavorited = await Context.Favorites.AnyAsync(f => f.EventId == Model.EventId && f.ApplicationUserId == currentUserId);
     }
 
-    bool isAdmin = User.IsInRole("Admin");
-
     // Yorumları yükle (Kullanıcı adlarını çekmek için)
     var comments = Model.Comments?.OrderByDescending(c => c.DatePosted).ToList() ?? new List<Comment>();
+
+    // Etkinlik Görseli Yolu
+    string eventImagePath = Model.ImagePath ?? "/images/default/event_placeholder.png";
 }
 
 <div class="row pt-4">
@@ -38,6 +40,10 @@
         <h1 class="display-5 text-primary">@Model.Title</h1>
         <p class="lead text-muted">Kategori: @Model.Category.Name</p>
         <hr />
+
+        <div class="mb-4">
+            <img src="@eventImagePath" alt="Etkinlik Görseli" class="img-fluid rounded shadow-sm" style="max-height: 400px; width: 100%; object-fit: cover;" />
+        </div>
 
         <h3>Detaylı Açıklama</h3>
         <p class="text-break">@Model.Description</p>
@@ -51,48 +57,54 @@
     <div class="col-md-4 text-center">
         <div class="card p-4 shadow-sm border-0">
 
-            <div class="mb-3">
-                @if (!isAuthenticated)
-                {
-                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Details", new { id = Model.EventId })"
-                       class="btn btn-warning w-100 mb-2 btn-lg">
-                        <i class="fas fa-user-lock"></i> Katılmak İçin Giriş Yapın
-                    </a>
-                    <small class="text-warning">Kaynak linki görmek için giriş yapmalısınız.</small>
-                }
-
-                <a href="@Model.SourceLink" target="_blank" class="btn @(hasCertificate ? "btn-success" : "btn-primary") w-100 mb-2 btn-lg">
-                    <i class="fas fa-external-link-alt"></i> Etkinliğe Git
-                </a>
-
-                @if (hasCertificate)
-                {
-                    <small class="text-success">Bu etkinliğe ait sertifikanızı yüklediniz. ✅</small>
-                }
-                else if (isAuthenticated)
-                {
-                    <small class="text-muted">Katılımınız için henüz sertifika yüklenmedi.</small>
-                }
-            </div>
-
-            @if (isAuthenticated)
+            @if (isAdmin)
             {
-                <form asp-controller="Events" asp-action="ToggleFavorite" method="post">
-                    <input type="hidden" name="eventId" value="@Model.EventId" />
-                    <button type="submit" class="btn btn-block @(isFavorited ? "btn-danger" : "btn-outline-danger") w-100">
-                        <i class="fas fa-heart"></i> @(isFavorited ? "Favorilerden Çıkar" : "Favorile")
-                    </button>
-                </form>
+                <h5 class="text-danger mb-3">ADMIN YÖNETİM PANELİ</h5>
+                <a asp-action="Edit" asp-route-id="@Model?.EventId" class="btn btn-warning mb-2">
+                    <i class="fas fa-edit"></i> Etkinliği Düzenle
+                </a>
+                <a asp-action="Delete" asp-route-id="@Model?.EventId" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Etkinliği Sil
+                </a>
+            }
+
+            @if (!isAdmin)
+            {
+                <div class="mb-3">
+                    @if (!isAuthenticated)
+                    {
+                        <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Details", new { id = Model.EventId })"
+                           class="btn btn-warning w-100 mb-2 btn-lg">
+                            <i class="fas fa-user-lock"></i> Katılmak İçin Giriş Yapın
+                        </a>
+                        <small class="text-warning">Kaynak linki görmek için giriş yapmalısınız.</small>
+                    }
+
+                    <a href="@Model.SourceLink" target="_blank" class="btn @(hasCertificate ? "btn-success" : "btn-primary") w-100 mb-2 btn-lg">
+                        <i class="fas fa-external-link-alt"></i> Etkinliğe Git
+                    </a>
+
+                    @if (hasCertificate)
+                    {
+                        <small class="text-success">Bu etkinliğe ait sertifikanızı yüklediniz. ✅</small>
+                    }
+                    else if (isAuthenticated)
+                    {
+                        <small class="text-muted">Katılımınız için henüz sertifika yüklenmedi.</small>
+                    }
+                </div>
+
+                @if (isAuthenticated)
+                {
+                    <form asp-controller="Events" asp-action="ToggleFavorite" method="post">
+                        <input type="hidden" name="eventId" value="@Model.EventId" />
+                        <button type="submit" class="btn btn-block @(isFavorited ? "btn-danger" : "btn-outline-danger") w-100">
+                            <i class="fas fa-heart"></i> @(isFavorited ? "Favorilerden Çıkar" : "Favorile")
+                        </button>
+                    </form>
+                }
             }
         </div>
-
-        @if (isAdmin)
-        {
-            <div class="mt-3">
-                <a asp-action="Edit" asp-route-id="@Model?.EventId" class="btn btn-sm btn-warning">Düzenle</a>
-                <a asp-action="Delete" asp-route-id="@Model?.EventId" class="btn btn-sm btn-danger">Sil</a>
-            </div>
-        }
     </div>
 </div>
 
@@ -109,47 +121,65 @@
         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
     }
 
-    @if (isAuthenticated && canComment)
+    @if (!isAdmin)
     {
-        <div class="p-3 mb-4 border rounded">
-            <h5>Yorumunuzu Ekleyin:</h5>
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+        @if (isAuthenticated && canComment)
+        {
+            <div class="p-3 mb-4 border rounded">
+                <h5>Yorumunuzu Ekleyin:</h5>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-            <form asp-controller="Events" asp-action="AddComment" method="post">
-                <input type="hidden" name="EventId" value="@Model.EventId" />
-                <textarea name="Content" class="form-control mb-2" rows="3" placeholder="Yorumunuz..."></textarea>
-                <button type="submit" class="btn btn-sm btn-primary">Gönder</button>
-            </form>
-        </div>
-    }
-    else if (isAuthenticated)
-    {
-        // Giriş yapılmış ama yorum yapma yetkisi yoksa nedenini göster
-        if (!hasCertificate)
-        {
-            <div class="alert alert-warning">Yorum yapabilmek için önce bu etkinliğe ait **sertifikanızı yüklemelisiniz** (Katılım Onayı).</div>
+                <form asp-controller="Events" asp-action="AddComment" method="post">
+                    <input type="hidden" name="EventId" value="@Model.EventId" />
+                    <textarea name="Content" class="form-control mb-2" rows="3" placeholder="Yorumunuz..."></textarea>
+                    <button type="submit" class="btn btn-sm btn-primary">Gönder</button>
+                </form>
+            </div>
         }
-       @*  else if (hasCommented)
+        else if (isAuthenticated)
         {
-            <div class="alert alert-info">Bu etkinliğe **zaten yorum yaptınız**. Her etkinliğe sadece bir defa yorum yapılabilir.</div>
-        } *@
+            // Giriş yapılmış ama yorum yapma yetkisi yoksa nedenini göster
+            if (!hasCertificate)
+            {
+                <div class="alert alert-warning">Yorum yapabilmek için önce bu etkinliğe ait **sertifikanızı yüklemelisiniz** (Katılım Onayı).</div>
+            }
+            else if (hasCommented)
+            {
+                <div class="alert alert-info">Bu etkinliğe **zaten yorum yaptınız**. Her etkinliğe sadece bir defa yorum yapılabilir.</div>
+            }
+        }
+        else
+        {
+            // Giriş yapılmamışsa
+            <div class="alert alert-info">Yorum yapmak için **giriş yapınız**.</div>
+        }
     }
-    else
-    {
-        // Giriş yapılmamışsa
-        <div class="alert alert-info">Yorum yapmak için **giriş yapınız**.</div>
-    }
+
 
     @if (comments.Any())
     {
         @foreach (var comment in comments)
         {
-            <div class="card card-body mb-3 shadow-sm">
-                <p class="mb-1">
-                    <strong>@comment.User?.FirstName @comment.User?.LastName</strong>
-                    <small class="text-muted">(@comment.DatePosted.ToShortDateString())</small>
-                </p>
-                <p>@comment.Content</p>
+            // KRİTİK KONTROL: Kullanıcı admin mi VEYA yorumu yapanın ID'si şu anki kullanıcının ID'sine eşit mi?
+            bool canDelete = isAdmin || (isAuthenticated && comment.ApplicationUserId == currentUserId);
+
+            <div class="card card-body mb-3 shadow-sm d-flex flex-row justify-content-between align-items-start">
+                <div>
+                    <p class="mb-1">
+                        <strong>@comment.User?.FirstName @comment.User?.LastName</strong>
+                        <small class="text-muted">(@comment.DatePosted.ToShortDateString())</small>
+                    </p>
+                    <p class="mb-0">@comment.Content</p>
+                </div>
+
+                @if (canDelete)
+                {
+                    <form asp-controller="Comments" asp-action="Delete" asp-route-id="@comment.CommentId" method="post" onsubmit="return confirm('Bu yorumu silmek istediğinizden emin misiniz?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="@(isAdmin ? "Yönetici Silme Yetkisi" : "Kendi Yorumunuzu Sil")">
+                            <i class="fas fa-trash-alt"></i> Sil
+                        </button>
+                    </form>
+                }
             </div>
         }
     }
