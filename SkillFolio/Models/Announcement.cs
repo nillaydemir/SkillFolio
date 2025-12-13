@@ -11,20 +11,19 @@ namespace SkillFolio.Models
         [Required]
         [StringLength(200)]
         [Display(Name = "Başlık")]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Duyuru İçeriği")]
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         [Display(Name = "Oluşturulma Tarihi")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        //RELATIONSHIP
         [Required]
         [Display(Name = "Duyuru Grubu")]
         public int AnnouncementGroupId { get; set; }
 
-        public AnnouncementGroup AnnouncementGroup { get; set; }
+        public AnnouncementGroup AnnouncementGroup { get; set; } = null!;
     }
 }

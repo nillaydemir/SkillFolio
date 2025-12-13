@@ -11,14 +11,13 @@ namespace SkillFolio.Models
         [Required]
         [StringLength(150)]
         [Display(Name = "Grup Adı")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Grup Türü")]
-        public string GroupType { get; set; }
-        // Örnek: "School", "Department"
+        public string GroupType { get; set; } = string.Empty;
 
-        // Navigation
-        public ICollection<Announcement> Announcements { get; set; }
+        public ICollection<Announcement> Announcements { get; set; } 
+            = new List<Announcement>();
     }
 }
