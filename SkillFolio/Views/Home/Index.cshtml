@@ -28,18 +28,6 @@
     </div>
 </div>
 
-<div class="container my-5">
-    <h2 class="text-center mb-5 text-secondary">
-        ✨ Fırsatları Kaçırma: Öne Çıkanlar
-    </h2>
-    
-    @if (!Model.Any())
-    {
-        <p class="text-muted">
-            Şu anda öne çıkan etkinlik bulunmamaktadır.
-        </p>
-    }
-
     <div class="row align-items-start">
          <!-- SOL: TAKVİM -->
         <div class="col-lg-4 mb-4">
@@ -55,40 +43,52 @@
             </div>
         </div>
 
-        <!-- SAĞ: ETKİNLİKLER -->
-        <div class="col-lg-8">
-            <div class="row">
+        <!-- SAĞ: ÖNE ÇIKANLAR -->
+        <div class="col-md-8">
+            <div class="soft-card h-100">
+                <h4 class="mb-4">
+                    ✨ Fırsatları Kaçırma: Öne Çıkanlar
+                </h4>
+
                 @if (Model.Any())
                 {
-                    @foreach (var item in Model)
-                    {
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card event-card shadow-sm h-100">
-                                <img src="@item.ImagePath"
-                                     class="card-img-top"
-                                     style="height:180px; object-fit:cover;" />
+                    <div class="row">
+                        @foreach (var item in Model)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card event-card shadow-sm h-100">
+                                    <img src="@item.ImagePath"
+                                         class="card-img-top"
+                                         alt="@item.Title"
+                                         style="height:160px;object-fit:cover;" />
 
-                                <div class="card-body">
-                                    <h6 class="fw-bold text-truncate">
-                                        @item.Title
-                                    </h6>
-                                    <p class="small text-muted mb-2">
-                                        @item.Category?.Name |
-                                        @item.DatePosted.ToShortDateString()
-                                    </p>
+                                    <div class="card-body">
+                                        <h6 class="card-title text-truncate">
+                                            @item.Title
+                                        </h6>
+                                        <small class="text-muted">
+                                            @item.Category?.Name |
+                                            @item.DatePosted.ToShortDateString()
+                                        </small>
 
-                                    <a asp-controller="Events"
-                                       asp-action="Details"
-                                       asp-route-id="@item.EventId"
-                                       class="btn btn-sm btn-outline-primary">
-                                        Detaylar
-                                    </a>
+                                        <a asp-controller="Events"
+                                           asp-action="Details"
+                                           asp-route-id="@item.EventId"
+                                           class="btn btn-sm btn-outline-primary mt-2">
+                                            Detaylar
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 }
-                
+                else
+                {
+                    <p class="text-muted">
+                        Şu anda öne çıkan etkinlik bulunmamaktadır.
+                    </p>
+                }
             </div>
         </div>
 
