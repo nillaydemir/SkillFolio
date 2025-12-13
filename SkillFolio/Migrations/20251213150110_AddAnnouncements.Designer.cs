@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillFolio.Data;
 
@@ -11,9 +12,11 @@ using SkillFolio.Data;
 namespace SkillFolio.Migrations
 {
     [DbContext(typeof(SkillFolioDbContext))]
-    partial class SkillFolioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251213150110_AddAnnouncements")]
+    partial class AddAnnouncements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,9 +166,6 @@ namespace SkillFolio.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementId"));
 
-                    b.Property<int>("AnnouncementGroupId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -180,31 +180,7 @@ namespace SkillFolio.Migrations
 
                     b.HasKey("AnnouncementId");
 
-                    b.HasIndex("AnnouncementGroupId");
-
                     b.ToTable("Announcements");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.AnnouncementGroup", b =>
-                {
-                    b.Property<int>("AnnouncementGroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementGroupId"));
-
-                    b.Property<string>("GroupType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("AnnouncementGroupId");
-
-                    b.ToTable("AnnouncementGroups");
                 });
 
             modelBuilder.Entity("SkillFolio.Models.ApplicationUser", b =>
@@ -409,17 +385,6 @@ namespace SkillFolio.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SkillFolio.Models.Announcement", b =>
-                {
-                    b.HasOne("SkillFolio.Models.AnnouncementGroup", "AnnouncementGroup")
-                        .WithMany("Announcements")
-                        .HasForeignKey("AnnouncementGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AnnouncementGroup");
-                });
-
             modelBuilder.Entity("SkillFolio.Models.Event", b =>
                 {
                     b.HasOne("SkillFolio.Models.EventCategory", "Category")
@@ -429,11 +394,6 @@ namespace SkillFolio.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.AnnouncementGroup", b =>
-                {
-                    b.Navigation("Announcements");
                 });
 
             modelBuilder.Entity("SkillFolio.Models.EventCategory", b =>

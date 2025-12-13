@@ -17,7 +17,12 @@ namespace SkillFolio.Data
         }
 
         public DbSet<Event> Events { get; set; }
+
         public DbSet<EventCategory> EventCategories { get; set; }
+
+        public DbSet<Announcement> Announcements { get; set; }
+        public DbSet<AnnouncementGroup> AnnouncementGroups { get; set; }
+
        // public DbSet<Certificate> Certificates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
