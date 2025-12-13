@@ -50,10 +50,15 @@
                                     </a>
                                 </li>
                             }
+                            string headerImagePath = user.ProfileImagePath ?? "/images/Profile/test-account.jpg";
+                            <li class="nav-item d-flex align-items-center me-3">
+                                <a class="nav-link text-light p-0" asp-controller="Profile" asp-action="Index" title="Profilim">
+                                    <img src="@headerImagePath" alt="Profil Resmi" class="img-thumbnail me-2"
+                                         style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;" />
+                                </a>
 
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Profile" asp-action="Index">
-                                    Merhaba, @(user?.FirstName ?? user?.UserName)!
+                                <a class="nav-link text-light p-0" asp-controller="Profile" asp-action="Index">
+                                    Merhaba, @(user.FirstName ?? user.UserName)!
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -83,13 +88,12 @@
             @RenderBody()
         </main>
     </div>
-
+@* 
     <footer class="border-top footer text-muted bg-light">
-        <div class="container text-center py-2">
-            &copy; 2025 - SkillFolio Web Uygulaması - ASP.NET MVC Projesi <br />
-            **[Adınız Soyadınız]** - [Ders Kodu] - [Semester]
+        <div class="container py-1">
+            &copy; 2025 - SkillFolio | [Ders Kodu] - [Semester] | **[Adınız Soyadınız]**
         </div>
-    </footer>
+    </footer> *@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

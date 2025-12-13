@@ -1,8 +1,71 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<SkillFolio.Models.Event>
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-banner p-5 text-center shadow-lg mb-5"
+     style="background-image: url('https://picsum.photos/1200/400?random=1'); background-size: cover; background-position: center;">
+    <div style="background-color: rgba(255, 255, 255, 0.85); padding: 30px; border-radius: 10px;">
+        <h1 class="display-4 fw-bold text-primary">SkillFolio: Kariyerine Yön Ver.</h1>
+        <p class="col-lg-8 mx-auto lead mb-4">
+            Okul ve kariyer etkinliklerini tek bir yerde toplayın. Sertifikalarınızı yönetin, becerilerinizi sergileyin.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a asp-controller="Events" asp-action="Index" class="btn btn-primary btn-lg px-4 me-sm-3">Tüm Etkinlikleri Keşfet</a>
+
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-secondary btn-lg px-4">Hemen Kayıt Ol</a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <h2 class="text-center mb-5 text-secondary">✨ Fırsatları Kaçırma: Öne Çıkanlar</h2>
+    <div class="row">
+        @if (Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card event-card shadow-sm h-100">
+                        <img src="@item.ImagePath" class="card-img-top" alt="@item.Title" style="height: 180px; object-fit: cover;">
+
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">@item.Title</h5>
+                            <p class="card-text small text-muted">@item.Category.Name | @item.DatePosted.ToShortDateString()</p>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@item.EventId" class="btn btn-sm btn-outline-primary mt-2">Detaylar</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-center text-muted">Şu anda öne çıkan etkinlik bulunmamaktadır.</p>
+        }
+    </div>
+</div>
+
+<div class="container my-5 py-5 bg-light rounded-3">
+    <h2 class="text-center mb-5 text-secondary">Neden SkillFolio?</h2>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <i class="fas fa-list-ul fa-3x text-primary mb-3"></i>
+            <h5 class="fw-bold">Tek Merkezde Toplama</h5>
+            <p>Farklı sitelerdeki tüm etkinlikleri filtreleyerek anında görüntüleyin.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="fas fa-certificate fa-3x text-primary mb-3"></i>
+            <h5 class="fw-bold">Sertifika Yönetimi</h5>
+            <p>Kazandığınız sertifikaları profilinizde düzenli bir şekilde sergileyin.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="fas fa-user-shield fa-3x text-primary mb-3"></i>
+            <h5 class="fw-bold">Kişisel Profil</h5>
+            <p>Eğitim geçmişinizi ve ilgi alanlarınızı tek bir sayfada toplayın.</p>
+        </div>
+    </div>
 </div>

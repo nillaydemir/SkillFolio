@@ -1,21 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // KRİTİK: IdentityDbContext için
-using Microsoft.AspNetCore.Identity; // IdentityRole için
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using SkillFolio.Models;
 
 namespace SkillFolio.Data
 {
-    // DÜZELTME: IdentityDbContext'ten 3 genel (generic) parametre ile türetildi.
-    // 1. ApplicationUser (Kullanıcı modeli)
-    // 2. IdentityRole (Rol modeli)
-    // 3. string (Anahtar tipi - Varsayılan)
+    // IdentityDbContext'ten 3 parametre ile türetme KRİTİKTİR.
     public class SkillFolioDbContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
     {
         public SkillFolioDbContext(DbContextOptions<SkillFolioDbContext> options)
             : base(options)
         {
         }
-
+        public DbSet<Comment> Comments { get; set; }
+        // Domain Modelleri
         public DbSet<Event> Events { get; set; }
 
         public DbSet<EventCategory> EventCategories { get; set; }
@@ -23,11 +21,12 @@ namespace SkillFolio.Data
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<AnnouncementGroup> AnnouncementGroups { get; set; }
 
-       // public DbSet<Certificate> Certificates { get; set; }
+        // KRİTİK EKLENTİLER (CS1061 hatasını çözer)
+        public DbSet<Certificate> Certificates { get; set; }
+        public DbSet<Favorite> Favorites { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            // Bu çağrı KRİTİKTİR. Identity'nin tüm tablolarının (Roller dahil) kurulmasını sağlar.
             base.OnModelCreating(builder);
         }
     }

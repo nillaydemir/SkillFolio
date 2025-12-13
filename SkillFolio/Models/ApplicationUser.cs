@@ -1,37 +1,44 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic; // ICollection için gerekli!
 
 namespace SkillFolio.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        [Required(ErrorMessage = "Ad alanı zorunludur.")]
+        // Zorunlu alanlar (CS8618 hatalarını önlemek için başlatıldı)
+        [Required]
+        [Display(Name = "Ad")]
         public string FirstName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Soyad alanı zorunludur.")]
+        [Required]
+        [Display(Name = "Soyad")]
         public string LastName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Okul Adı zorunludur.")]
+        [Required]
+        [Display(Name = "Okul")]
         public string SchoolName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Bölüm zorunludur.")]
+        [Required]
+        [Display(Name = "Bölüm")]
         public string Department { get; set; } = string.Empty;
-
-        // 5. Start year (Başlangıç Yılı)
-        [Required(ErrorMessage = "Başlangıç Yılı zorunludur.")]
+        [Display(Name = "Profil Fotoğrafı Yolu")]
+        public string? ProfileImagePath { get; set; }
+        [Required]
         [Display(Name = "Başlangıç Yılı")]
-        public int StartYear { get; set; } // int olarak tutulması daha uygun
+        public int StartYear { get; set; }
 
-        // 6. End year (Bitiş Yılı)
-        // Opsiyonel olabilir (mezun olmadıysa), ancak mock-up'ta zorunlu görünüyor
         [Display(Name = "Bitiş Yılı")]
-        public int? EndYear { get; set; } // Nullable int olarak tutabiliriz
+        public int? EndYear { get; set; }
 
-        // 10. Birth Date (Doğum Tarihi)
-        [Required(ErrorMessage = "Doğum Tarihi zorunludur.")]
+        [Required]
         [DataType(DataType.Date)]
         [Display(Name = "Doğum Tarihi")]
         public DateTime BirthDate { get; set; }
+
+        // Navigasyon Özellikleri
+        public ICollection<Certificate>? Certificates { get; set; } // CS1061 hatasının kaynağı
+        public ICollection<Favorite>? Favorites { get; set; }
     }
 }

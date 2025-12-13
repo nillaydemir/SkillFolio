@@ -1,31 +1,81 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+/* Youthall benzeri bir renk paleti için temel deðiþkenler */
+:root {
+    --primary-color: #5d5392; /* Mor tonlarý (Youthall'ýn marka rengi) */
+    --secondary-color: #f87968; /* Vurgu Rengi (Pembe/turuncu) */
+    --light-bg: #f7f3ff; /* Açýk morumsu zemin (Hafif bir renk katmaný) */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: #f4f4f9; /* Hafif kirli beyaz arka plan */
+    font-family: var(--font-family);
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* Header ve Footer Stili */
+.navbar {
+    background-color: var(--primary-color) !important;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.footer {
+    background-color: #ffffff;
+  
+    border-top: 1px solid #e0e0e0;
+    padding: 10px 0; /* Küçültüldü */
+    font-size: 0.8rem; /* Yazý boyutu küçültüldü */
+    line-height: 1.2;
+   
+}
+
+/* Kart Görünümü Ýyileþtirmesi (Events/Index için) */
+.event-card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden; /* Resimlerin taþmasýný önler */
+}
+
+    .event-card:hover {
+        transform: translateY(-5px); /* Hafif yukarý kayma efekti */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-card .card-img-top {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+
+    .event-card .card-body {
+        padding: 1.5rem;
+    }
+
+/* Hero Alaný (Home/Index için) */
+.hero-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #a766cc 100%);
+    color: white;
+    border-radius: 15px;
+}
+
+/* Buton Stilleri */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    transition: background-color 0.3s;
+}
+
+    .btn-primary:hover {
+        background-color: #4b4478;
+        border-color: #4b4478;
+    }
+
+.btn-warning {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: white;
+}
+
+/* Profil Kartlarý (Views/Profile/Index.cshtml) */
+.profile-card {
+    background-color: var(--light-bg);
+    border-radius: 15px;
+    border: none;
 }

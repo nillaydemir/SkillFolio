@@ -1,4 +1,4 @@
-﻿@model SkillFolio.Models.Event
+﻿@model SkillFolio.ViewModels.EventViewModel
 
 @{
     ViewData["Title"] = "Yeni Etkinlik Ekle";
@@ -11,12 +11,18 @@
     <div class="col-md-6">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
 
             <div class="form-group mb-3">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ImageFile" class="control-label"></label>
+                <input asp-for="ImageFile" type="file" class="form-control-file" accept="image/*" />
+                <span asp-validation-for="ImageFile" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
