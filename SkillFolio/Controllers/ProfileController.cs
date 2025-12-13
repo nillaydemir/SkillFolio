@@ -45,33 +45,21 @@ public class ProfileController : Controller
         // 📅 TAKVİM – SADECE KULLANICIYA AİT EVENTLER
     var now = DateTime.Now;
 
-    var userEvents =
-        user.Favorites?
-            .Where(f => f.Event != null)
-            .Select(f => f.Event!)
-            .Union(
-                user.Certificates?
-                    .Where(c => c.Event != null)
-                    .Select(c => c.Event!)
-                ?? Enumerable.Empty<Event>()
-            )
-            .Distinct()
-            .ToList()
-        ?? new List<Event>();
+   // Kullanıcının KAYITLI olduğu etkinlikler
+    var userEvents = user.Favorites?
+        .Where(f => f.Event != null && f.Event.EventDate.Month == now.Month && f.Event.EventDate.Year == now.Year)
+        .GroupBy(f => f.Event!.EventDate.Day)
+        .ToDictionary(
+            g => g.Key,
+            g => g.Select(x => x.Event!.Title).ToList()
+        ) 
+        ?? new Dictionary<int, List<string>>();
 
     var calendar = new CalendarViewModel
     {
         Year = now.Year,
         Month = now.Month,
         EventsByDay = userEvents
-            .Where(e =>
-                e.EventDate.Month == now.Month &&
-                e.EventDate.Year == now.Year)
-            .GroupBy(e => e.EventDate.Day)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(e => e.Title).ToList()
-            )
     };
 
     ViewBag.Calendar = calendar;

@@ -95,14 +95,24 @@
                 <a asp-controller="Profile" asp-action="Edit" class="btn btn-sm btn-outline-secondary mt-2">Profili Düzenle</a>
             </div>
 
-            <div class="card p-4 shadow-sm border-0">
-                <h5 class="text-primary">📅 Planlayıcı</h5>
-                <div id="calendarDisplay" style="min-height: 250px; background-color: #ffffff;">
-                    <p class="text-muted small mt-2">Takvimde favorilenen etkinlikler ve sertifika yüklenen etkinlikler işaretlenir.</p>
-                    <p>Favorilenen Etkinlik Sayısı: @calendarEvents.Count</p>
-                </div>
-            </div>
+            <div class="soft-card shadow-sm mt-4 calendar-card">
+                <h5 class="text-center mb-3">📅 Etkinlik Takvimim</h5>
+
+            @if (ViewBag.ProfileCalendar != null)
+            {
+                @await Html.PartialAsync(
+                    "_Calendar",
+                    (SkillFolio.ViewModels.CalendarViewModel)ViewBag.ProfileCalendar
+                )
+            }
+            else
+            {
+                <p class="text-muted small text-center">
+                Bu ay için kayıtlı olduğunuz etkinlik bulunmuyor.
+            </p>
+        }
         </div>
+    </div>
 
         <div class="col-md-7">
 
@@ -162,17 +172,3 @@
     }
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
-    <script>
-        // JS ile takvim verilerini kullanmak için
-        const eventData = @Html.Raw(jsonEvents);
-
-        if (eventData.length > 0) {
-            console.log("Takvimde işaretlenecek etkinlikler:", eventData);
-        }
-    </script>
-}
