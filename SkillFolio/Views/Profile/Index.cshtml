@@ -95,24 +95,37 @@
                 <a asp-controller="Profile" asp-action="Edit" class="btn btn-sm btn-outline-secondary mt-2">Profili Düzenle</a>
             </div>
 
-            <div class="soft-card shadow-sm mt-4 calendar-card">
-                <h5 class="text-center mb-3">📅 Etkinlik Takvimim</h5>
+            <div class="card profile-card shadow p-4 mb-4 border-0">
 
-            @if (ViewBag.ProfileCalendar != null)
-            {
-                @await Html.PartialAsync(
-                    "_Calendar",
-                    (SkillFolio.ViewModels.CalendarViewModel)ViewBag.ProfileCalendar
-                )
-            }
-            else
-            {
-                <p class="text-muted small text-center">
-                Bu ay için kayıtlı olduğunuz etkinlik bulunmuyor.
-            </p>
-        }
+                <h5 class="fw-bold mb-3 text-primary">
+                    📅 Etkinlik Takvimim
+                </h5>
+
+                @if (calendarEvents.Any())
+                {
+                    @await Html.PartialAsync(
+                        "_Calendar",
+                        new SkillFolio.ViewModels.CalendarViewModel
+                        {
+                            Year = DateTime.Now.Year,
+                            Month = DateTime.Now.Month,
+                            EventsByDay = calendarEvents
+                                .GroupBy(e => ((DateTime)e.Date).Day)
+                                .ToDictionary(
+                                    g => g.Key,
+                                    g => g.Select(x => (string)x.Title).ToList()
+                                )
+                        }
+                    )
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        Bu ay için kayıtlı olduğunuz etkinlik bulunmuyor.
+                    </p>
+                }
+            </div>
         </div>
-    </div>
 
         <div class="col-md-7">
 
