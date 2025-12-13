@@ -20,6 +20,8 @@ namespace SkillFolio.Data
 
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<AnnouncementGroup> AnnouncementGroups { get; set; }
+        public DbSet<UserEvent> UserEvents { get; set; }
+
 
         // KRİTİK EKLENTİLER (CS1061 hatasını çözer)
         public DbSet<Certificate> Certificates { get; set; }

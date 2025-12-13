@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
+using SkillFolio.ViewModels;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity; 
@@ -8,22 +10,45 @@ namespace SkillFolio.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly SkillFolioDbContext _context; // Alan tanýmlý
+        private readonly SkillFolioDbContext _context; // Alan tanï¿½mlï¿½
 
-        // KURUCU: Dependency Injection ile DbContext alýnýyor.
+        // KURUCU: Dependency Injection ile DbContext alï¿½nï¿½yor.
         public HomeController(SkillFolioDbContext context)
         {
-            _context = context; // Veri atamasý yapýlýyor (Null hatasý çözüldü)
+            _context = context; // Veri atamasï¿½ yapï¿½lï¿½yor (Null hatasï¿½ ï¿½ï¿½zï¿½ldï¿½)
         }
 
         public async Task<IActionResult> Index()
         {
-            // Veritabanýndan veri çekme, _context null olmayacaktýr.
+            // Veritabanï¿½ndan veri ï¿½ekme, _context null olmayacaktï¿½r.
             var featuredEvents = await _context.Events
                 .Include(e => e.Category)
-                .OrderByDescending(e => e.DatePosted)
+                .OrderBy(e => e.EventDate)
                 .Take(3)
                 .ToListAsync();
+
+                 // ðŸ“… TAKVÄ°M DATASI
+            var now = DateTime.Now;
+
+            var calendar = new CalendarViewModel
+            {
+                Year = now.Year,
+                Month = now.Month,
+                EventsByDay = await _context.Events
+                    .Where(e => 
+                    e.DatePosted.Month == now.Month && 
+                    e.EventDate.Year == now.Year)
+                    .GroupBy(e => e.EventDate.Day)
+                    .Select(g => new
+                    {
+                        Day = g.Key,
+                        Titles = g.Select(e => e.Title).ToList()
+                    })
+                    .ToDictionaryAsync(x => x.Day, x => x.Titles)
+            };
+
+            // Viewâ€™a iki farklÄ± data gÃ¶nderiyoruz
+            ViewBag.Calendar = calendar;
 
             return View(featuredEvents);
         }

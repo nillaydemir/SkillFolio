@@ -40,6 +40,8 @@ namespace SkillFolio.Models
         [Display(Name = "Yayınlanma Tarihi")]
         public DateTime DatePosted { get; set; } = DateTime.Now;
 
+        public DateTime EventDate { get; set; }
+
         // Yabancı Anahtar (Kategori)
         [Display(Name = "Kategori")]
         public int CategoryId { get; set; }

@@ -42,14 +42,42 @@ public class ProfileController : Controller
 
         if (user == null) return NotFound($"Kullanıcı yüklenemedi: ID '{userId}'.");
 
-        // Takvim verilerini hazırlar
-        var favoritedEvents = user.Favorites?.Where(f => f.Event != null).Select(f => new { Title = f.Event!.Title + " (Favori)", Date = f.DateFavorited.Date }) ?? Enumerable.Empty<dynamic>();
-        var certificatedEvents = user.Certificates?.Select(c => new { Title = c.Title + " (Sertifika)", Date = c.UploadDate.Date }) ?? Enumerable.Empty<dynamic>();
+        // 📅 TAKVİM – SADECE KULLANICIYA AİT EVENTLER
+    var now = DateTime.Now;
 
-        ViewBag.CalendarEvents = favoritedEvents.Union(certificatedEvents).ToList();
+    var userEvents =
+        user.Favorites?
+            .Where(f => f.Event != null)
+            .Select(f => f.Event!)
+            .Union(
+                user.Certificates?
+                    .Where(c => c.Event != null)
+                    .Select(c => c.Event!)
+                ?? Enumerable.Empty<Event>()
+            )
+            .Distinct()
+            .ToList()
+        ?? new List<Event>();
 
-        return View(user);
-    }
+    var calendar = new CalendarViewModel
+    {
+        Year = now.Year,
+        Month = now.Month,
+        EventsByDay = userEvents
+            .Where(e =>
+                e.EventDate.Month == now.Month &&
+                e.EventDate.Year == now.Year)
+            .GroupBy(e => e.EventDate.Day)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(e => e.Title).ToList()
+            )
+    };
+
+    ViewBag.Calendar = calendar;
+
+    return View(user);
+}
 
     // GET: Profile/Edit - Profili düzenleme formunu gösterir
     [Authorize]

@@ -1,0 +1,59 @@
+@model SkillFolio.ViewModels.CalendarViewModel
+
+<div class="calendar-wrapper">
+    <table class="table table-bordered text-center calendar-table">
+        <thead>
+            <tr>
+                <th>Pzt</th>
+                <th>Sal</th>
+                <th>Çar</th>
+                <th>Per</th>
+                <th>Cum</th>
+                <th>Cts</th>
+                <th>Paz</th>
+            </tr>
+        </thead>
+        <tbody>
+@{
+    var firstDay = new DateTime(Model.Year, Model.Month, 1);
+    var startDay = ((int)firstDay.DayOfWeek + 6) % 7; // Pazartesi başlangıç
+    var daysInMonth = DateTime.DaysInMonth(Model.Year, Model.Month);
+    var day = 1;
+}
+
+@for (int i = 0; i < 6; i++)
+{
+    <tr>
+    @for (int j = 0; j < 7; j++)
+    {
+        if ((i == 0 && j < startDay) || day > daysInMonth)
+        {
+            <td></td>
+        }
+        else
+        {
+            <td class="calendar-day">
+                <div class="day-number">@day</div>
+
+                @* ETKİNLİK VARSA GÖSTER *@
+                @if (Model.EventsByDay.ContainsKey(day))
+                {
+                    <div class="calendar-events">
+                        @foreach (var title in Model.EventsByDay[day])
+                        {
+                            <div class="calendar-event" title="@title">
+                                @title
+                            </div>
+                        }
+                    </div>
+                }
+            </td>
+
+            day++;
+        }
+    }
+    </tr>
+}
+        </tbody>
+    </table>
+</div>
