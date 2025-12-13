@@ -11,16 +11,21 @@
     bool isAdmin = (currentUser != null && await UserManager.IsInRoleAsync(currentUser, "Admin"));
 }
 
-<div class="header-banner text-center py-5 mb-5" style="background: linear-gradient(to right, #f87968, #ffb3a7);">
+<div class="header-banner text-center py-3 mb-4" style="background: linear-gradient(to right, #f87968, #ffb3a7);">
     <h1 class="text-white display-4 fw-bold mb-4">Etkinlikleri Keşfet</h1>
 
     <form asp-controller="Events" asp-action="Index" method="get" class="mx-auto" style="max-width: 900px;">
-        <div class="input-group">
+        <div class="event-filter-bar">
             <input type="text" name="SearchString" value="@ViewData["CurrentSearch"]" class="form-control form-control-lg" placeholder="Katılmak istediğin etkinliği ara (Başlık, Kategori, Açıklama)" aria-label="Arama" />
 
-            <select class="form-select form-select-lg w-auto" disabled>
-                <option selected>Lokasyon</option>
+            <select name="platform" class="form-select form-select-lg w-auto">
+                <option value="">Platform </option>
+                <option value="Youthall">Youthall</option>
+                <option value="Pupilica">Pupilica</option>
+                <option value="KariyerNet">Kariyer.net</option>
+                <option value="LinkedIn">LinkedIn</option>
             </select>
+
             <select name="sortOrder" class="form-select form-select-lg w-auto">
                 <option value="">Sırala (Varsayılan)</option>
                 <option value="Date">Tarih (Eskiden Yeniye)</option>
@@ -36,9 +41,9 @@
 
 <div class="container d-flex justify-content-center mb-5">
     <a href="@Url.Action("Index", "Events")" class="btn btn-outline-primary mx-1 active">Tüm Etkinlikler</a>
-    <a href="#" class="btn btn-outline-secondary mx-1" disabled>Zirve</a>
-    <a href="#" class="btn btn-outline-secondary mx-1" disabled>Buluşma</a>
-    <a href="#" class="btn btn-outline-secondary mx-1" disabled>Sohbet</a>
+    <a href="#" class="btn btn-outline-secondary mx-1" >Eğitim</a>
+    <a href="#" class="btn btn-outline-secondary mx-1" >Zirve</a>
+    <a href="#" class="btn btn-outline-secondary mx-1" >Sohbet (Yakında!)</a>
 </div>
 
 @if (isAdmin)

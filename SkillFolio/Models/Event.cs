@@ -48,5 +48,10 @@ namespace SkillFolio.Models
 
         // İlişki Navigasyon Özelliği
         public EventCategory? Category { get; set; }
+
+        public string EventType { get; set; } 
+        // Örn: "Zirve", "Sohbet", "Eğitim"
+
     }
+
 }

@@ -48,6 +48,29 @@ body {
         padding: 1.5rem;
     }
 
+    /* EVENTS – Filtre Bar Düzeltmesi */
+.event-filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+    .event-filter-bar .form-control,
+    .event-filter-bar .form-select {
+        min-width: 260px;     /* Katılmak iste… kesilmesini çözer */
+        height: 44px;
+    }
+
+    .event-filter-bar button {
+        height: 44px;
+        white-space: nowrap;
+    }
+
+    .header-banner {
+    padding: 2.5rem 1rem;   /* eskiden py-5 gibi çok uzundu */
+}
+
 /* Hero Alan� (Home/Index i�in) */
 .hero-banner {
     background: linear-gradient(135deg, var(--primary-color) 0%, #a766cc 100%);
