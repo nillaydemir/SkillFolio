@@ -6,19 +6,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Models;
 using SkillFolio.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 [Authorize]
 public class ProfileController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SkillFolio.Data.SkillFolioDbContext _context;
-    private readonly IWebHostEnvironment _hostEnvironment; // Fotoğraf yükleme için eklendi
-
+    private readonly IWebHostEnvironment _hostEnvironment; 
     public ProfileController(UserManager<ApplicationUser> userManager, SkillFolio.Data.SkillFolioDbContext context, IWebHostEnvironment hostEnvironment)
     {
         _userManager = userManager;
@@ -26,14 +20,14 @@ public class ProfileController : Controller
         _hostEnvironment = hostEnvironment;
     }
 
-    // GET: Profile/Index - Profil sayfasını ve verileri gösterir
+    // GET: Profile/Index 
     public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
 
         if (userId == null) return NotFound("Kullanıcı bulunamadı.");
 
-        // Eager Loading: Sertifikalar, Favoriler ve ilişkili Etkinlikleri yükler
+        
         var user = await _context.Users
             .Include(u => u.Certificates)
             .Include(u => u.Favorites!)
@@ -67,7 +61,7 @@ public class ProfileController : Controller
     return View(user);
 }
 
-    // GET: Profile/Edit - Profili düzenleme formunu gösterir
+    // GET: Profile/Edit 
     [Authorize]
     public async Task<IActionResult> Edit()
     {
@@ -77,7 +71,7 @@ public class ProfileController : Controller
             return NotFound($"Kullanıcı yüklenemedi.");
         }
 
-        // Kullanıcı verilerini ViewModel'e eşle
+        
         var viewModel = new ProfileEditViewModel
         {
             FirstName = user.FirstName,
@@ -105,25 +99,24 @@ public class ProfileController : Controller
             return NotFound();
         }
 
-        // ModelState geçerli olmasa bile mevcut fotoğraf yolu korunmalı
+      
         if (!ModelState.IsValid)
         {
             model.ExistingProfileImagePath = user.ProfileImagePath;
             return View(model);
         }
 
-        // 1. Dosya Yükleme İşlemi (Profil Fotoğrafı)
+        //  Dosya Yükleme İşlemi (Profil Fotoğrafı)
         if (model.ProfilePictureFile != null)
         {
             string wwwRootPath = _hostEnvironment.WebRootPath;
             string extension = Path.GetExtension(model.ProfilePictureFile.FileName);
             string fileName = Guid.NewGuid().ToString() + extension;
 
-            // DB'ye kaydedilecek göreceli yol (wwwroot'a göre)
             user.ProfileImagePath = "/images/profile/" + fileName;
             string path = Path.Combine(wwwRootPath, "images", "profile", fileName);
 
-            // Eski fotoğrafı silme (opsiyonel ama iyi bir pratik)
+           
             if (!string.IsNullOrEmpty(model.ExistingProfileImagePath))
             {
                 string oldPath = Path.Combine(wwwRootPath, model.ExistingProfileImagePath.TrimStart('/'));
@@ -134,7 +127,6 @@ public class ProfileController : Controller
             }
 
             // Yeni fotoğrafı kaydetme
-            // Klasörün varlığını kontrol et (Gerekirse oluştur)
             var directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory)) Directory.CreateDirectory(directory!);
 
@@ -144,16 +136,16 @@ public class ProfileController : Controller
             }
         }
 
-        // 2. Kullanıcı Bilgilerini Güncelleme
+        // Kullanıcı Bilgilerini Güncelleme
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
         user.SchoolName = model.SchoolName;
         user.Department = model.Department;
         user.BirthDate = model.BirthDate;
-        user.StartYear = model.StartYear ?? 0; // Nullable olmayan alanlar için varsayılan değer atanmalı
+        user.StartYear = model.StartYear ?? 0; 
         user.EndYear = model.EndYear;
 
-        // Kullanıcıyı veritabanında güncelle
+        // Kullanıcıyı veritabanında güncelleme
         var result = await _userManager.UpdateAsync(user);
 
         if (result.Succeeded)
@@ -168,12 +160,12 @@ public class ProfileController : Controller
             ModelState.AddModelError(string.Empty, error.Description);
         }
 
-        // Hata durumunda mevcut fotoğraf yolunu tekrar View'e gönder
+        
         model.ExistingProfileImagePath = user.ProfileImagePath;
         return View(model);
     }
 
-    // --- Sertifika Yükleme Metotları ---
+    // --- Sertifika---
 
     // GET: Profile/UploadCertificate
     public IActionResult UploadCertificate()
@@ -187,7 +179,7 @@ public class ProfileController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UploadCertificate(CertificateUploadViewModel model)
     {
-        // ... (Sertifika yükleme mantığı aynı kalır) ...
+       
         if (ModelState.IsValid)
         {
             var user = await _userManager.GetUserAsync(User);

@@ -10,24 +10,23 @@ namespace SkillFolio.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly SkillFolioDbContext _context; // Alan tan�ml�
+        private readonly SkillFolioDbContext _context; 
 
-        // KURUCU: Dependency Injection ile DbContext al�n�yor.
+      
         public HomeController(SkillFolioDbContext context)
         {
-            _context = context; // Veri atamas� yap�l�yor (Null hatas� ��z�ld�)
+            _context = context; 
         }
 
         public async Task<IActionResult> Index()
         {
-            // Veritaban�ndan veri �ekme, _context null olmayacakt�r.
             var featuredEvents = await _context.Events
                 .Include(e => e.Category)
                 .OrderBy(e => e.EventDate)
                 .Take(3)
                 .ToListAsync();
 
-                 // 📅 TAKVİM DATASI
+            //takvim
             var now = DateTime.Now;
 
             var calendar = new CalendarViewModel
@@ -47,7 +46,7 @@ namespace SkillFolio.Controllers
                     .ToDictionaryAsync(x => x.Day, x => x.Titles)
             };
 
-            // View’a iki farklı data gönderiyoruz
+            
             ViewBag.Calendar = calendar;
 
             return View(featuredEvents);

@@ -15,12 +15,10 @@ namespace SkillFolio.Models
 
         public DateTime UploadDate { get; set; }
 
-        // İlişki 1: ApplicationUser'a Bağlantı
         public string ApplicationUserId { get; set; }
         public ApplicationUser? ApplicationUser { get; set; }
 
-        // YENİ EKLENTİ: İlişki 2: Event'e Bağlantı
-        [Required] // Sertifika bir etkinliğe bağlı olmalıdır
+        [Required] 
         [Display(Name = "Bağlı Etkinlik")]
         public int? EventId { get; set; }
         [ForeignKey("EventId")]

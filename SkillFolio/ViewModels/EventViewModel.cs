@@ -1,14 +1,10 @@
-﻿// ViewModels/EventViewModel.cs (YENİ DOSYA OLUŞTURULACAK)
-
-using Microsoft.AspNetCore.Http;
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SkillFolio.ViewModels
 {
     public class EventViewModel
     {
-        public int EventId { get; set; } // Düzenleme için
+        public int EventId { get; set; } 
 
         [Required(ErrorMessage = "Etkinlik Başlığı zorunludur.")]
         [StringLength(200)]
@@ -38,11 +34,10 @@ namespace SkillFolio.ViewModels
         [Display(Name = "Etkinlik Tarihi")]
         public DateTime EventDate { get; set; }
 
-        // YENİ: Dosya Yükleme Alanı
         [Display(Name = "Etkinlik Görseli Seç")]
         public IFormFile? ImageFile { get; set; }
 
-        // Mevcut fotoğrafın yolu (Düzenleme sayfasında göstermek için)
+       
         public string? ExistingImagePath { get; set; }
 
     }
