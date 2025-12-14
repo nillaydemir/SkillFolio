@@ -127,6 +127,7 @@ namespace SkillFolio.Controllers
                     SourceLink = model.SourceLink,
                     CategoryId = model.CategoryId,
                     EventType = model.EventType,
+                    EventDate = model.EventDate,
                     ImagePath = imagePath, // Yolu kaydet
                     DatePosted = DateTime.Now
                 };
@@ -157,6 +158,7 @@ namespace SkillFolio.Controllers
                 SourceLink = @event.SourceLink,
                 CategoryId = @event.CategoryId,
                 EventType = @event.EventType,
+                EventDate = @event.EventDate,
                 ExistingImagePath = @event.ImagePath
             };
 
@@ -194,6 +196,7 @@ namespace SkillFolio.Controllers
                 @event.SourceLink = model.SourceLink;
                 @event.CategoryId = model.CategoryId;
                 @event.EventType = model.EventType;
+                @event.EventDate = model.EventDate;
                 @event.ImagePath = newImagePath; // Yolu güncelle
 
                 try

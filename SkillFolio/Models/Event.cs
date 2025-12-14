@@ -39,14 +39,15 @@ namespace SkillFolio.Models
         [DataType(DataType.DateTime)]
         [Display(Name = "Yayınlanma Tarihi")]
         public DateTime DatePosted { get; set; } = DateTime.Now;
-
-        public DateTime EventDate { get; set; }
         
         [Required]
         [StringLength(50)]
         [Display(Name = "Etkinlik Türü")]
         public string EventType { get; set; } = "Eğitim";
         // Örn: "Zirve", "Sohbet", "Eğitim"
+
+        [DataType(DataType.Date)]
+        public DateTime EventDate { get; set; }
 
         // Yabancı Anahtar (Kategori)
         [Display(Name = "Kategori")]

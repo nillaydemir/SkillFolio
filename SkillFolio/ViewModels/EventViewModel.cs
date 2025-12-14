@@ -33,14 +33,17 @@ namespace SkillFolio.ViewModels
         [Display(Name = "Etkinlik Türü")]
         public string EventType { get; set; } = "Eğitim";
 
+        [Required(ErrorMessage = "Etkinlik tarihi zorunludur.")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Etkinlik Tarihi")]
+        public DateTime EventDate { get; set; }
+
         // YENİ: Dosya Yükleme Alanı
         [Display(Name = "Etkinlik Görseli Seç")]
         public IFormFile? ImageFile { get; set; }
 
         // Mevcut fotoğrafın yolu (Düzenleme sayfasında göstermek için)
         public string? ExistingImagePath { get; set; }
-
-        
 
     }
 }

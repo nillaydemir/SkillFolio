@@ -1,6 +1,14 @@
 @model SkillFolio.ViewModels.CalendarViewModel
 
 <div class="calendar-wrapper">
+
+     <!-- AY + YIL BAŞLIĞI -->
+    <h5 class="text-center fw-bold mb-3">
+    @(new DateTime(Model.Year, Model.Month, 1)
+        .ToString("MMMM yyyy", new System.Globalization.CultureInfo("tr-TR")))
+</h5>
+
+    
     <table class="table table-bordered text-center calendar-table">
         <thead>
             <tr>

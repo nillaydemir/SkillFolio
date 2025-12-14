@@ -110,7 +110,7 @@
                             Year = DateTime.Now.Year,
                             Month = DateTime.Now.Month,
                             EventsByDay = calendarEvents
-                                .GroupBy(e => ((DateTime)e.Date).Day)
+                                .GroupBy(e => ((DateTime)e.EventDate).Day)
                                 .ToDictionary(
                                     g => g.Key,
                                     g => g.Select(x => (string)x.Title).ToList()
