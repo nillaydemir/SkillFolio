@@ -40,10 +40,25 @@
 </div>
 
 <div class="container d-flex justify-content-center mb-5">
-    <a href="@Url.Action("Index", "Events")" class="btn btn-outline-primary mx-1 active">Tüm Etkinlikler</a>
-    <a href="#" class="btn btn-outline-secondary mx-1" >Eğitim</a>
-    <a href="#" class="btn btn-outline-secondary mx-1" >Zirve</a>
-    <a href="#" class="btn btn-outline-secondary mx-1" >Sohbet (Yakında!)</a>
+    <a asp-action="Index"
+       class="btn btn-outline-primary mx-1 @(ViewData["CurrentEventType"] == null ? "active" : "")">
+        Tüm Etkinlikler
+    </a>
+    <a asp-action="Index"
+       asp-route-eventType="Eğitim"
+       class="btn btn-outline-secondary mx-1 @(ViewData["CurrentEventType"]?.ToString() == "Eğitim" ? "active" : "")">
+        Eğitim
+    </a>
+    <a asp-action="Index"
+       asp-route-eventType="Zirve"
+       class="btn btn-outline-secondary mx-1 @(ViewData["CurrentEventType"]?.ToString() == "Zirve" ? "active" : "")">
+        Zirve
+    </a>
+    <a asp-action="Index"
+       asp-route-eventType="Sohbet"
+       class="btn btn-outline-secondary mx-1 @(ViewData["CurrentEventType"]?.ToString() == "Sohbet" ? "active" : "")">
+        Sohbet
+    </a>
 </div>
 
 @if (isAdmin)

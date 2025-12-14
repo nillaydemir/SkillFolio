@@ -29,11 +29,18 @@ namespace SkillFolio.ViewModels
         [Required(ErrorMessage = "Kategori seçimi zorunludur.")]
         public int CategoryId { get; set; }
 
+        [Required(ErrorMessage = "Etkinlik türü zorunludur.")]
+        [Display(Name = "Etkinlik Türü")]
+        public string EventType { get; set; } = "Eğitim";
+
         // YENİ: Dosya Yükleme Alanı
         [Display(Name = "Etkinlik Görseli Seç")]
         public IFormFile? ImageFile { get; set; }
 
         // Mevcut fotoğrafın yolu (Düzenleme sayfasında göstermek için)
         public string? ExistingImagePath { get; set; }
+
+        
+
     }
 }

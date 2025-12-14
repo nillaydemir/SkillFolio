@@ -41,6 +41,12 @@ namespace SkillFolio.Models
         public DateTime DatePosted { get; set; } = DateTime.Now;
 
         public DateTime EventDate { get; set; }
+        
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Etkinlik Türü")]
+        public string EventType { get; set; } = "Eğitim";
+        // Örn: "Zirve", "Sohbet", "Eğitim"
 
         // Yabancı Anahtar (Kategori)
         [Display(Name = "Kategori")]
@@ -49,8 +55,7 @@ namespace SkillFolio.Models
         // İlişki Navigasyon Özelliği
         public EventCategory? Category { get; set; }
 
-        public string EventType { get; set; } 
-        // Örn: "Zirve", "Sohbet", "Eğitim"
+        
 
     }
 

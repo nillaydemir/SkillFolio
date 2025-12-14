@@ -31,11 +31,12 @@ namespace SkillFolio.Controllers
 
         // 1. READ (List)
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString,string eventType)
         {
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
             ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
             ViewData["CurrentSearch"] = searchString;
+            ViewData["CurrentEventType"] = eventType;
 
             var events = _context.Events.Include(e => e.Category).AsQueryable();
 
@@ -44,6 +45,10 @@ namespace SkillFolio.Controllers
                 events = events.Where(s => s.Title.Contains(searchString)
                                          || s.Description.Contains(searchString)
                                          || s.Category!.Name.Contains(searchString));
+            }
+            if (!string.IsNullOrEmpty(eventType))
+            {
+                events = events.Where(e => e.EventType == eventType);
             }
 
             switch (sortOrder)
@@ -121,6 +126,7 @@ namespace SkillFolio.Controllers
                     Description = model.Description,
                     SourceLink = model.SourceLink,
                     CategoryId = model.CategoryId,
+                    EventType = model.EventType,
                     ImagePath = imagePath, // Yolu kaydet
                     DatePosted = DateTime.Now
                 };
@@ -150,6 +156,7 @@ namespace SkillFolio.Controllers
                 Description = @event.Description,
                 SourceLink = @event.SourceLink,
                 CategoryId = @event.CategoryId,
+                EventType = @event.EventType,
                 ExistingImagePath = @event.ImagePath
             };
 
@@ -186,6 +193,7 @@ namespace SkillFolio.Controllers
                 @event.Description = model.Description;
                 @event.SourceLink = model.SourceLink;
                 @event.CategoryId = model.CategoryId;
+                @event.EventType = model.EventType;
                 @event.ImagePath = newImagePath; // Yolu güncelle
 
                 try
