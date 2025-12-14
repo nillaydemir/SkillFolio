@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillFolio.Data;
 
@@ -11,9 +12,11 @@ using SkillFolio.Data;
 namespace SkillFolio.Migrations
 {
     [DbContext(typeof(SkillFolioDbContext))]
-    partial class SkillFolioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251213150110_AddAnnouncements")]
+    partial class AddAnnouncements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,9 +166,6 @@ namespace SkillFolio.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementId"));
 
-                    b.Property<int>("AnnouncementGroupId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -180,31 +180,7 @@ namespace SkillFolio.Migrations
 
                     b.HasKey("AnnouncementId");
 
-                    b.HasIndex("AnnouncementGroupId");
-
                     b.ToTable("Announcements");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.AnnouncementGroup", b =>
-                {
-                    b.Property<int>("AnnouncementGroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementGroupId"));
-
-                    b.Property<string>("GroupType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("AnnouncementGroupId");
-
-                    b.ToTable("AnnouncementGroups");
                 });
 
             modelBuilder.Entity("SkillFolio.Models.ApplicationUser", b =>
@@ -267,9 +243,6 @@ namespace SkillFolio.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProfileImagePath")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("SchoolName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -300,73 +273,6 @@ namespace SkillFolio.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("SkillFolio.Models.Certificate", b =>
-                {
-                    b.Property<int>("CertificateId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CertificateId"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UploadDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("CertificateId");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Certificates");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.Comment", b =>
-                {
-                    b.Property<int>("CommentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("DatePosted")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CommentId");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("SkillFolio.Models.Event", b =>
                 {
                     b.Property<int>("EventId")
@@ -383,17 +289,6 @@ namespace SkillFolio.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EventDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SourceLink")
@@ -430,60 +325,13 @@ namespace SkillFolio.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("CategoryId");
 
                     b.ToTable("EventCategories");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.Favorite", b =>
-                {
-                    b.Property<int>("FavoriteId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FavoriteId"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("DateFavorited")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.HasKey("FavoriteId");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Favorites");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.UserEvent", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserEvents");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -537,55 +385,6 @@ namespace SkillFolio.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SkillFolio.Models.Announcement", b =>
-                {
-                    b.HasOne("SkillFolio.Models.AnnouncementGroup", "AnnouncementGroup")
-                        .WithMany("Announcements")
-                        .HasForeignKey("AnnouncementGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AnnouncementGroup");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.Certificate", b =>
-                {
-                    b.HasOne("SkillFolio.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany("Certificates")
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SkillFolio.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-
-                    b.Navigation("Event");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.Comment", b =>
-                {
-                    b.HasOne("SkillFolio.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SkillFolio.Models.Event", "Event")
-                        .WithMany("Comments")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("SkillFolio.Models.Event", b =>
                 {
                     b.HasOne("SkillFolio.Models.EventCategory", "Category")
@@ -595,61 +394,6 @@ namespace SkillFolio.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.Favorite", b =>
-                {
-                    b.HasOne("SkillFolio.Models.ApplicationUser", "User")
-                        .WithMany("Favorites")
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SkillFolio.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.UserEvent", b =>
-                {
-                    b.HasOne("SkillFolio.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SkillFolio.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.AnnouncementGroup", b =>
-                {
-                    b.Navigation("Announcements");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("Certificates");
-
-                    b.Navigation("Favorites");
-                });
-
-            modelBuilder.Entity("SkillFolio.Models.Event", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("SkillFolio.Models.EventCategory", b =>

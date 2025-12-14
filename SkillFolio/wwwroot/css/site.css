@@ -1,8 +1,8 @@
-/* Youthall benzeri bir renk paleti için temel deðiþkenler */
+/* Youthall benzeri bir renk paleti iï¿½in temel deï¿½iï¿½kenler */
 :root {
-    --primary-color: #5d5392; /* Mor tonlarý (Youthall'ýn marka rengi) */
+    --primary-color: #5d5392; /* Mor tonlarï¿½ (Youthall'ï¿½n marka rengi) */
     --secondary-color: #f87968; /* Vurgu Rengi (Pembe/turuncu) */
-    --light-bg: #f7f3ff; /* Açýk morumsu zemin (Hafif bir renk katmaný) */
+    --light-bg: #f7f3ff; /* Aï¿½ï¿½k morumsu zemin (Hafif bir renk katmanï¿½) */
     --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -20,22 +20,22 @@ body {
     background-color: #ffffff;
   
     border-top: 1px solid #e0e0e0;
-    padding: 10px 0; /* Küçültüldü */
-    font-size: 0.8rem; /* Yazý boyutu küçültüldü */
+    padding: 10px 0; /* Kï¿½ï¿½ï¿½ltï¿½ldï¿½ */
+    font-size: 0.8rem; /* Yazï¿½ boyutu kï¿½ï¿½ï¿½ltï¿½ldï¿½ */
     line-height: 1.2;
    
 }
 
-/* Kart Görünümü Ýyileþtirmesi (Events/Index için) */
+/* Kart Gï¿½rï¿½nï¿½mï¿½ ï¿½yileï¿½tirmesi (Events/Index iï¿½in) */
 .event-card {
     border: none;
     border-radius: 12px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    overflow: hidden; /* Resimlerin taþmasýný önler */
+    overflow: hidden; /* Resimlerin taï¿½masï¿½nï¿½ ï¿½nler */
 }
 
     .event-card:hover {
-        transform: translateY(-5px); /* Hafif yukarý kayma efekti */
+        transform: translateY(-5px); /* Hafif yukarï¿½ kayma efekti */
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
 
@@ -48,7 +48,30 @@ body {
         padding: 1.5rem;
     }
 
-/* Hero Alaný (Home/Index için) */
+    /* EVENTS â€“ Filtre Bar DÃ¼zeltmesi */
+.event-filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+    .event-filter-bar .form-control,
+    .event-filter-bar .form-select {
+        min-width: 260px;     /* KatÄ±lmak isteâ€¦ kesilmesini Ã§Ã¶zer */
+        height: 44px;
+    }
+
+    .event-filter-bar button {
+        height: 44px;
+        white-space: nowrap;
+    }
+
+    .header-banner {
+    padding: 2.5rem 1rem;   /* eskiden py-5 gibi Ã§ok uzundu */
+}
+
+/* Hero Alanï¿½ (Home/Index iï¿½in) */
 .hero-banner {
     background: linear-gradient(135deg, var(--primary-color) 0%, #a766cc 100%);
     color: white;
@@ -73,9 +96,57 @@ body {
     color: white;
 }
 
-/* Profil Kartlarý (Views/Profile/Index.cshtml) */
+/* Profil Kartlarï¿½ (Views/Profile/Index.cshtml) */
 .profile-card {
     background-color: var(--light-bg);
     border-radius: 15px;
     border: none;
+}
+
+.soft-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.soft-card h5 {
+    font-weight: 600;
+    color: #4b4b7c;
+}
+
+.calendar-card {
+    min-height: 100%;
+}
+
+.calendar-card h5 {
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+.calendar-day {
+    min-height: 100%;
+    vertical-align: top;
+    padding: 6px;
+}
+
+.day-number {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.calendar-event {
+    font-size: 0.7rem;
+    background-color: rgba(93, 83, 146, 0.15);
+    color: #5d5392;
+    border-radius: 6px;
+    padding: 2px 6px;
+    text-align: center;
+}
+/*Takvim */
+.glass-card {
+    background-color: rgba(247, 243, 255, 0.85);
 }

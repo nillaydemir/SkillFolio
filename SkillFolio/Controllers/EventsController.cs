@@ -5,13 +5,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
-using SkillFolio.ViewModels; // Yeni eklendi
-using System;
+using SkillFolio.ViewModels;
+
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting; // IWebHostEnvironment için
-using System.IO; // Dosya işlemleri için
+
 
 namespace SkillFolio.Controllers
 {
@@ -19,9 +16,9 @@ namespace SkillFolio.Controllers
     {
         private readonly SkillFolioDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IWebHostEnvironment _hostEnvironment; // YENİ EKLENDİ
+        private readonly IWebHostEnvironment _hostEnvironment; 
 
-        // KURUCU: DbContext, UserManager ve IWebHostEnvironment enjekte edildi.
+    
         public EventsController(SkillFolioDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
@@ -29,13 +26,14 @@ namespace SkillFolio.Controllers
             _hostEnvironment = hostEnvironment;
         }
 
-        // 1. READ (List)
+        // List
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString,string eventType)
         {
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
             ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
             ViewData["CurrentSearch"] = searchString;
+            ViewData["CurrentEventType"] = eventType;
 
             var events = _context.Events.Include(e => e.Category).AsQueryable();
 
@@ -44,6 +42,10 @@ namespace SkillFolio.Controllers
                 events = events.Where(s => s.Title.Contains(searchString)
                                          || s.Description.Contains(searchString)
                                          || s.Category!.Name.Contains(searchString));
+            }
+            if (!string.IsNullOrEmpty(eventType))
+            {
+                events = events.Where(e => e.EventType == eventType);
             }
 
             switch (sortOrder)
@@ -57,7 +59,7 @@ namespace SkillFolio.Controllers
             return View(await events.ToListAsync());
         }
 
-        // 2. READ (Details)
+        // (Details)
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
@@ -97,13 +99,13 @@ namespace SkillFolio.Controllers
         public IActionResult Create()
         {
             ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name");
-            return View(new EventViewModel()); // ViewModel gönderiliyor
+            return View(new EventViewModel()); 
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(EventViewModel model) // ViewModel kullanıldı
+        public async Task<IActionResult> Create(EventViewModel model) 
         {
             if (ModelState.IsValid)
             {
@@ -121,7 +123,9 @@ namespace SkillFolio.Controllers
                     Description = model.Description,
                     SourceLink = model.SourceLink,
                     CategoryId = model.CategoryId,
-                    ImagePath = imagePath, // Yolu kaydet
+                    EventType = model.EventType,
+                    EventDate = model.EventDate,
+                    ImagePath = imagePath,
                     DatePosted = DateTime.Now
                 };
 
@@ -141,8 +145,6 @@ namespace SkillFolio.Controllers
             if (id == null) return NotFound();
             var @event = await _context.Events.FindAsync(id);
             if (@event == null) return NotFound();
-
-            // Event modelini ViewModel'e dönüştür
             var viewModel = new EventViewModel
             {
                 EventId = @event.EventId,
@@ -150,17 +152,19 @@ namespace SkillFolio.Controllers
                 Description = @event.Description,
                 SourceLink = @event.SourceLink,
                 CategoryId = @event.CategoryId,
+                EventType = @event.EventType,
+                EventDate = @event.EventDate,
                 ExistingImagePath = @event.ImagePath
             };
 
             ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", @event.CategoryId);
-            return View(viewModel); // ViewModel gönderildi
+            return View(viewModel); 
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, EventViewModel model) // ViewModel kullanıldı
+        public async Task<IActionResult> Edit(int id, EventViewModel model) 
         {
             if (id != model.EventId) return NotFound();
 
@@ -171,7 +175,6 @@ namespace SkillFolio.Controllers
 
                 string newImagePath = @event.ImagePath ?? string.Empty;
 
-                // 1. Yeni Fotoğraf Yükleme ve Eski Fotoğrafı Silme
                 if (model.ImageFile != null)
                 {
                     // Eski fotoğrafı sil
@@ -186,7 +189,9 @@ namespace SkillFolio.Controllers
                 @event.Description = model.Description;
                 @event.SourceLink = model.SourceLink;
                 @event.CategoryId = model.CategoryId;
-                @event.ImagePath = newImagePath; // Yolu güncelle
+                @event.EventType = model.EventType;
+                @event.EventDate = model.EventDate;
+                @event.ImagePath = newImagePath; 
 
                 try
                 {
@@ -205,7 +210,23 @@ namespace SkillFolio.Controllers
             return View(model);
         }
 
-        // 5. DELETE (POST) - SADECE Admin
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id) // Bu, tarayıcıdan gelen GET isteğini karşılar.
+        {
+            if (id == null) return NotFound();
+
+            // Onay sayfasında gösterebilmek için ilgili Event ve Category verilerini çekiyoruz
+            var @event = await _context.Events
+                .Include(e => e.Category)
+                .FirstOrDefaultAsync(m => m.EventId == id);
+
+            if (@event == null) return NotFound();
+
+            // Delete.cshtml View'ine Event modelini gönder
+            return View(@event);
+        }
+        
         [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -214,22 +235,14 @@ namespace SkillFolio.Controllers
             var @event = await _context.Events.FindAsync(id);
             if (@event != null)
             {
-                // İlişkili fotoğrafı sunucudan sil
-                DeleteImageFile(@event.ImagePath);
 
-                // Veritabanından sil
+                DeleteImageFile(@event.ImagePath);
                 _context.Events.Remove(@event);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-
-        // ------------------------------------
-        // YARDIMCI METOTLAR (Helper Methods)
-        // ------------------------------------
-
-        // Dosyayı wwwroot/images/events klasörüne kaydeder
         private async Task<string> SaveImageFile(Microsoft.AspNetCore.Http.IFormFile file)
         {
             string wwwRootPath = _hostEnvironment.WebRootPath;
@@ -241,7 +254,6 @@ namespace SkillFolio.Controllers
             string extension = Path.GetExtension(file.FileName);
             string fileName = Guid.NewGuid().ToString() + extension;
 
-            // DB'ye kaydedilecek göreceli yol
             string relativePath = $"/images/events/{fileName}";
             string path = Path.Combine(uploadsFolder, fileName);
 
@@ -253,7 +265,6 @@ namespace SkillFolio.Controllers
             return relativePath;
         }
 
-        // Eski fotoğrafı sunucudan siler
         private void DeleteImageFile(string? imagePath)
         {
             if (!string.IsNullOrEmpty(imagePath))
@@ -268,9 +279,9 @@ namespace SkillFolio.Controllers
             }
         }
 
-        // ... (Yorum ve Favorileme Metotları aynı kalır) ...
+  
 
-        // Yorum Gönderme Modeli
+   
         public class CommentViewModel
         {
             [Required] public int EventId { get; set; }
@@ -286,7 +297,7 @@ namespace SkillFolio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComment(CommentViewModel model)
         {
-            // ... (AddComment mantığı aynı kalır) ...
+            
             var userId = _userManager.GetUserId(User);
 
             bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
@@ -335,7 +346,6 @@ namespace SkillFolio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFavorite(int eventId)
         {
-            // ... (ToggleFavorite mantığı aynı kalır) ...
             var userId = _userManager.GetUserId(User);
 
             var existingFavorite = await _context.Favorites

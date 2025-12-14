@@ -1,8 +1,5 @@
-﻿// Models/Comment.cs
-
-using System;
+﻿
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SkillFolio.Models
 {
@@ -17,12 +14,10 @@ namespace SkillFolio.Models
 
         public DateTime DatePosted { get; set; } = DateTime.Now;
 
-        // Kullanıcı İlişkisi
         [Required]
         public string ApplicationUserId { get; set; } = string.Empty;
         public ApplicationUser? User { get; set; }
 
-        // Etkinlik İlişkisi
         [Required]
         public int EventId { get; set; }
         public Event? Event { get; set; }

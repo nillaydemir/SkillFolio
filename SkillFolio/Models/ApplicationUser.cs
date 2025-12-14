@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic; // ICollection için gerekli!
+
 
 namespace SkillFolio.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        // Zorunlu alanlar (CS8618 hatalarını önlemek için başlatıldı)
+        // Zorunlu alanlar 
         [Required]
         [Display(Name = "Ad")]
         public string FirstName { get; set; } = string.Empty;
@@ -37,8 +36,8 @@ namespace SkillFolio.Models
         [Display(Name = "Doğum Tarihi")]
         public DateTime BirthDate { get; set; }
 
-        // Navigasyon Özellikleri
-        public ICollection<Certificate>? Certificates { get; set; } // CS1061 hatasının kaynağı
+     
+        public ICollection<Certificate>? Certificates { get; set; } 
         public ICollection<Favorite>? Favorites { get; set; }
     }
 }

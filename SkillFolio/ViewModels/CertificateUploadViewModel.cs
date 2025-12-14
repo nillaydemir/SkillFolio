@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SkillFolio.ViewModels
 {
-    // YENİ ÖZELLİK: Etkinlik ID'si eklendi
     public class CertificateUploadViewModel
     {
         [Required(ErrorMessage = "Sertifika başlığı zorunludur.")]
@@ -16,6 +14,6 @@ namespace SkillFolio.ViewModels
 
         [Required(ErrorMessage = "Lütfen bu sertifikanın ait olduğu etkinliği seçin.")]
         [Display(Name = "Etkinlik Seçimi")]
-        public int EventId { get; set; } // Hangi Event'e bağlı olduğunu tutar
+        public int EventId { get; set; } 
     }
 }

@@ -1,14 +1,10 @@
-﻿// ViewModels/ProfileEditViewModel.cs
-
-using Microsoft.AspNetCore.Http; // IFormFile için
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SkillFolio.ViewModels
 {
     public class ProfileEditViewModel
     {
-        // Temel Kullanıcı Bilgileri
+        // Kullanıcı Bilgileri
         [Required(ErrorMessage = "Ad alanı zorunludur.")]
         [Display(Name = "Ad")]
         public string FirstName { get; set; } = string.Empty;
@@ -38,7 +34,6 @@ namespace SkillFolio.ViewModels
         [Display(Name = "Yeni Profil Fotoğrafı Seç")]
         public IFormFile? ProfilePictureFile { get; set; }
 
-        // Mevcut fotoğrafın yolu (Gösterim ve silme mantığı için)
         public string? ExistingProfileImagePath { get; set; }
     }
 }

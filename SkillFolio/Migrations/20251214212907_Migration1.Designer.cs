@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillFolio.Data;
 
@@ -11,9 +12,11 @@ using SkillFolio.Data;
 namespace SkillFolio.Migrations
 {
     [DbContext(typeof(SkillFolioDbContext))]
-    partial class SkillFolioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251214212907_Migration1")]
+    partial class Migration1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

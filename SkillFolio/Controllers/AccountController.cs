@@ -1,34 +1,29 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc; // CS0103 ('View', 'ModelState') hataları için kritik
+using Microsoft.AspNetCore.Mvc; 
 using SkillFolio.Models;
 using SkillFolio.ViewModels;
 using System.Threading.Tasks;
 
-// Sınıfın kapsamını belirleyen ad alanı
 namespace SkillFolio.Controllers
 {
-    // Controller tanımı (CS0106 ve CS8802 hatalarını çözer)
     public class AccountController : Controller
     {
-        // Bağımlılık Enjeksiyonu için Alanlar (CS0103 '_userManager' hatasını çözer)
+        
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        // Kurucu (Constructor)
+        
         public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
-        // --- REGISTER (GET) ---
-
+        //--Register--
         public IActionResult Register()
         {
             return View();
         }
-
-        // --- REGISTER (POST) ---
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -40,14 +35,13 @@ namespace SkillFolio.Controllers
                 {
                     UserName = model.Email,
                     Email = model.Email,
-                    // Tüm Mockup Alanlarının Atanması
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     BirthDate = model.BirthDate,
                     SchoolName = model.SchoolName,
                     Department = model.Department,
                     StartYear = model.StartYear,
-                    EndYear = model.EndYear, // Nullable ise bu şekilde atanabilir
+                    EndYear = model.EndYear, 
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -59,7 +53,6 @@ namespace SkillFolio.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Hata oluşursa Model State'e ekle
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -68,15 +61,13 @@ namespace SkillFolio.Controllers
             return View(model);
         }
 
-        // --- LOGIN (GET) ---
+        // ---LOGIN---
 
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
-
-        // --- LOGIN (POST) ---
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -85,7 +76,7 @@ namespace SkillFolio.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                // Giriş yapma denemesi
+                // Giriş yapma 
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
@@ -103,7 +94,7 @@ namespace SkillFolio.Controllers
             return View(model);
         }
 
-        // --- LOGOUT (POST) ---
+        // --- LOGOUT ---
 
         [HttpPost]
         [ValidateAntiForgeryToken]

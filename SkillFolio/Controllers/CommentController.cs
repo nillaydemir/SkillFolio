@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
-using System.Linq;
-using System.Threading.Tasks;
 
-[Authorize] // Bu Controller'daki tüm metotlar için giriş zorunludur
+[Authorize] 
 public class CommentsController : Controller
 {
     private readonly SkillFolioDbContext _context;
@@ -19,7 +17,7 @@ public class CommentsController : Controller
         _userManager = userManager;
     }
 
-    // Yorum Silme Metodu (Hem Kullanıcı hem de Admin için)
+    // Yorum Silme 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
@@ -39,38 +37,36 @@ public class CommentsController : Controller
         int eventId = comment.EventId;
 
         // Yetki Kontrolü:
-        // 1. Kullanıcı kendi yorumunu mu siliyor? VEYA
-        // 2. Kullanıcı Admin mi?
+     
         if (comment.ApplicationUserId != userId && !isAdmin)
         {
             TempData["CommentError"] = "Bu yorumu silmeye yetkiniz bulunmamaktadır.";
             return RedirectToAction("Details", "Events", new { id = eventId });
         }
 
-        // 1. Yorumu Sil
+        // Yorumu Sil
         _context.Comments.Remove(comment);
 
-        // 2. Değişiklikleri Kaydet
+        // Değişiklikleri Kaydet
         try
         {
             await _context.SaveChangesAsync();
-
-            // Başarı Mesajı ve Mantık Yönetimi
+         
             if (!isAdmin)
             {
-                // Kullanıcı kendi yorumunu sildiyse, yorum yapma hakkı geri gelir.
+                
                 TempData["SuccessMessage"] = "Yorumunuz başarıyla silindi. Bu etkinliğe tekrar yorum yapabilirsiniz.";
             }
             else
             {
-                // Admin sildiyse
+                
                 TempData["SuccessMessage"] = "Yorum başarıyla silindi (Admin).";
             }
         }
         catch (Exception ex)
         {
             TempData["CommentError"] = "Yorum silinirken bir hata oluştu: " + ex.Message;
-            // Gerçek projede loglama yapılmalı
+           
         }
 
         // Etkinlik detay sayfasına geri dön

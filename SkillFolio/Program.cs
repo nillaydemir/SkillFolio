@@ -2,23 +2,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq; // LINQ ve List için eklendi
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. Hizmetleri Yapýlandýrma ---
 
-// 1.1 Veritabaný Baðlantýsýný Okuma
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// 1.2 DbContext'i EF Core'a Kaydetme
 builder.Services.AddDbContext<SkillFolioDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 1.3 Identity Hizmetlerini Kaydetme
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -35,15 +28,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddControllersWithViews();
 
 
-// --- 2. Uygulama Ýstek Hattýný (Pipeline) Yapýlandýrma ---
-
 var app = builder.Build();
-
-// Rol ve Kategori Tohumlama metodunu çaðýr
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    // Metot adý SeedData olarak güncellendi ve bu metot çaðrýlýyor
+   
     await SeedData(services);
 }
 
@@ -62,7 +51,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Kimlik Doðrulama ve Yetkilendirme
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -73,16 +61,13 @@ app.MapControllerRoute(
 app.Run();
 
 
-// --- 3. Rol ve Kategori Tohumlama Metodu (SeedData) ---
-
 static async Task SeedData(IServiceProvider serviceProvider)
 {
     var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    // DbContext'i tohumlama için al
+   
     var context = serviceProvider.GetRequiredService<SkillFolioDbContext>();
 
-    // 3.1. Rolleri oluþtur
     string[] roleNames = { "Admin", "User" };
     foreach (var roleName in roleNames)
     {
@@ -93,7 +78,7 @@ static async Task SeedData(IServiceProvider serviceProvider)
         }
     }
 
-    // 3.2. Varsayýlan Admin Kullanýcýsý Oluþturma
+    // Varsayýlan Admin Kullanýcýsý Oluþturma
     string adminEmail = "admin@skillfolio.com";
     string adminPassword = "Admin123*";
 
@@ -122,7 +107,6 @@ static async Task SeedData(IServiceProvider serviceProvider)
         }
     }
 
-    // 3.3. YENÝ EKLENTÝ: Kategori Tohumlamasý (ZORUNLU ALAN DÜZELTMESÝ YAPILDI)
     var newCategories = new List<string>
     {
         "Yazýlým Geliþtirme (Web/Mobil)",
@@ -144,7 +128,7 @@ static async Task SeedData(IServiceProvider serviceProvider)
             context.EventCategories.Add(new SkillFolio.Models.EventCategory
             {
                 Name = categoryName,
-                // KRÝTÝK DÜZELTME: Description alanýna zorunlu bir deðer atandý
+              
                 Description = $"Bu, {categoryName} kategorisine ait genel bir açýklamadýr."
             });
         }
