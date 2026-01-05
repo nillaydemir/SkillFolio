@@ -78,7 +78,7 @@ static async Task SeedData(IServiceProvider serviceProvider)
         }
     }
 
-    // Varsayýlan Admin Kullanýcýsý Oluþturma
+    // Varsayï¿½lan Admin Kullanï¿½cï¿½sï¿½ Oluï¿½turma
     string adminEmail = "admin@skillfolio.com";
     string adminPassword = "Admin123*";
 
@@ -109,16 +109,16 @@ static async Task SeedData(IServiceProvider serviceProvider)
 
     var newCategories = new List<string>
     {
-        "Yazýlým Geliþtirme (Web/Mobil)",
+        "Yazï¿½lï¿½m Geliï¿½tirme (Web/Mobil)",
         "Veri Bilimi ve Yapay Zeka",
         "Bulut Teknolojileri (AWS, Azure)",
         "Dijital Pazarlama ve SEO",
-        "Grafik Tasarým ve UI/UX",
+        "Grafik Tasarï¿½m ve UI/UX",
         "Finans ve Ekonomi",
-        "Kariyer ve Kiþisel Geliþim",
-        "Giriþimcilik ve Ýnovasyon",
-        "Biyoloji ve Yaþam Bilimleri",
-        "Sanat ve Yaratýcýlýk"
+        "Kariyer ve Kiï¿½isel Geliï¿½im",
+        "Giriï¿½imcilik ve ï¿½novasyon",
+        "Biyoloji ve Yaï¿½am Bilimleri",
+        "Sanat ve Yaratï¿½cï¿½lï¿½k"
     };
 
     foreach (var categoryName in newCategories)
@@ -129,11 +129,30 @@ static async Task SeedData(IServiceProvider serviceProvider)
             {
                 Name = categoryName,
               
-                Description = $"Bu, {categoryName} kategorisine ait genel bir açýklamadýr."
+                Description = $"Bu, {categoryName} kategorisine ait genel bir aï¿½ï¿½klamadï¿½r."
             });
         }
     }
 
-    // Deðiþiklikleri veritabanýna kaydet
+    // AnnouncementGroups seeding - School and Department groups
+    if (!await context.AnnouncementGroups.AnyAsync(g => g.GroupType == "School"))
+    {
+        context.AnnouncementGroups.Add(new SkillFolio.Models.AnnouncementGroup
+        {
+            Name = "Okul DuyurularÄ±",
+            GroupType = "School"
+        });
+    }
+
+    if (!await context.AnnouncementGroups.AnyAsync(g => g.GroupType == "Department"))
+    {
+        context.AnnouncementGroups.Add(new SkillFolio.Models.AnnouncementGroup
+        {
+            Name = "BÃ¶lÃ¼m DuyurularÄ±",
+            GroupType = "Department"
+        });
+    }
+
+    // Deï¿½iï¿½iklikleri veritabanï¿½na kaydet
     await context.SaveChangesAsync();
 }

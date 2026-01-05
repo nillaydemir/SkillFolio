@@ -1,0 +1,79 @@
+@model SkillFolio.ViewModels.AnnouncementGroupsViewModel
+
+@{
+    ViewData["Title"] = "Duyuru Gruplarım";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Duyuru Gruplarım</h2>
+
+    @if (Model.HasSchoolGroup)
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Okul Duyuruları</h4>
+            </div>
+            <div class="card-body">
+                @if (Model.SchoolAnnouncements.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var announcement in Model.SchoolAnnouncements)
+                        {
+                            <div class="list-group-item">
+                                <h5 class="mb-1">@announcement.Title</h5>
+                                <p class="mb-1">@announcement.Content</p>
+                                <small class="text-muted">@announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")</small>
+                                <div class="mt-2">
+                                    <a asp-action="Details" asp-route-id="@announcement.AnnouncementId" class="btn btn-sm btn-outline-primary">Detay Gör</a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Henüz okul duyurusu bulunmamaktadır.</p>
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.HasDepartmentGroup)
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Bölüm Duyuruları</h4>
+            </div>
+            <div class="card-body">
+                @if (Model.DepartmentAnnouncements.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var announcement in Model.DepartmentAnnouncements)
+                        {
+                            <div class="list-group-item">
+                                <h5 class="mb-1">@announcement.Title</h5>
+                                <p class="mb-1">@announcement.Content</p>
+                                <small class="text-muted">@announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")</small>
+                                <div class="mt-2">
+                                    <a asp-action="Details" asp-route-id="@announcement.AnnouncementId" class="btn btn-sm btn-outline-primary">Detay Gör</a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Henüz bölüm duyurusu bulunmamaktadır.</p>
+                }
+            </div>
+        </div>
+    }
+
+    @if (!Model.HasSchoolGroup && !Model.HasDepartmentGroup)
+    {
+        <div class="alert alert-warning">
+            <p>Profil bilgilerinizde okul veya bölüm bilgisi bulunmadığı için duyuru grubuna erişiminiz bulunmamaktadır.</p>
+        </div>
+    }
+</div>
+

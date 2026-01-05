@@ -1,0 +1,47 @@
+@model SkillFolio.Models.Announcement
+
+@{
+    ViewData["Title"] = "Duyuru Detayları";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">@Model.Title</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Grup:</dt>
+                <dd class="col-sm-9">@Model.AnnouncementGroup?.Name</dd>
+
+                <dt class="col-sm-3">Grup Türü:</dt>
+                <dd class="col-sm-9">
+                    @if (Model.AnnouncementGroup?.GroupType == "School")
+                    {
+                        <span class="badge bg-primary">Okul</span>
+                    }
+                    else if (Model.AnnouncementGroup?.GroupType == "Department")
+                    {
+                        <span class="badge bg-success">Bölüm</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@Model.AnnouncementGroup?.GroupType</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Oluşturulma Tarihi:</dt>
+                <dd class="col-sm-9">@Model.CreatedAt.ToString("dd MMMM yyyy HH:mm")</dd>
+            </dl>
+
+            <hr />
+
+            <h5>İçerik:</h5>
+            <p class="text-break">@Model.Content</p>
+        </div>
+        <div class="card-footer">
+            <a asp-action="Groups" class="btn btn-secondary">Geri Dön</a>
+        </div>
+    </div>
+</div>
+
