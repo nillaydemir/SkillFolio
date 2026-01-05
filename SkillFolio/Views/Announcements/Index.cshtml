@@ -1,34 +1,37 @@
-@model IEnumerable<SkillFolio.Models.Announcement>
+@model IEnumerable<SkillFolio.Models.Event>
 
 @{
-    ViewData["Title"] = "Duyurular";
+    ViewData["Title"] = "Favorilediğim Etkinliklerle İlgili Yaklaşan Duyurular";
 }
 
-<h2>Duyurular</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Favorilediğim Etkinliklerle İlgili Yaklaşan Duyurular</h2>
 
-@if (!Model.Any())
-{
-    <p>Henüz duyuru bulunmamaktadır.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Başlık</th>
-                <th>Grup</th>
-                <th>Tarih</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Title</td>
-                <td>@item.AnnouncementGroup?.Name</td>
-                <td>@item.CreatedAt.ToShortDateString()</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <p>Yaklaşan 7 gün içinde favorilediğiniz etkinlik bulunmamaktadır.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var eventItem in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@eventItem.Title</h5>
+                            <p class="card-text">
+                                <strong>Etkinlik Tarihi:</strong> @eventItem.EventDate.ToString("dd MMMM yyyy")
+                            </p>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@eventItem.EventId" class="btn btn-primary">
+                                Etkinlik Detayları
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
