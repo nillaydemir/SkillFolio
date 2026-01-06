@@ -39,5 +39,7 @@ namespace SkillFolio.Models
      
         public ICollection<Certificate>? Certificates { get; set; } 
         public ICollection<Favorite>? Favorites { get; set; }
+        public ICollection<UserEvent> UserEvent { get; set; }
+
     }
 }

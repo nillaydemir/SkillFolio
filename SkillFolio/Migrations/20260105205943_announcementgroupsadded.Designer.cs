@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillFolio.Data;
 
@@ -11,9 +12,11 @@ using SkillFolio.Data;
 namespace SkillFolio.Migrations
 {
     [DbContext(typeof(SkillFolioDbContext))]
-    partial class SkillFolioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105205943_announcementgroupsadded")]
+    partial class announcementgroupsadded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -473,12 +476,6 @@ namespace SkillFolio.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("RegisteredAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -631,7 +628,7 @@ namespace SkillFolio.Migrations
                         .IsRequired();
 
                     b.HasOne("SkillFolio.Models.ApplicationUser", "User")
-                        .WithMany("UserEvent")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -651,8 +648,6 @@ namespace SkillFolio.Migrations
                     b.Navigation("Certificates");
 
                     b.Navigation("Favorites");
-
-                    b.Navigation("UserEvent");
                 });
 
             modelBuilder.Entity("SkillFolio.Models.Event", b =>

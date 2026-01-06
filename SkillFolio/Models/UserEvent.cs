@@ -7,5 +7,9 @@ namespace SkillFolio.Models
         public ApplicationUser User { get; set; }
         public int EventId { get; set; }
         public Event Event { get; set; }
+
+        //takvime fav'kaydetmek için
+        public DateTime RegisteredAt { get; set; }
+        public bool IsApproved { get; set; }
     }
 }

@@ -30,36 +30,57 @@ public class ProfileController : Controller
         
         var user = await _context.Users
             .Include(u => u.Certificates)
+            .Include(u => u.UserEvent!)
+                .ThenInclude(f => f.Event)
             .Include(u => u.Favorites!)
                 .ThenInclude(f => f.Event)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null) return NotFound($"Kullanıcı yüklenemedi: ID '{userId}'.");
 
-        // 📅 TAKVİM – SADECE KULLANICIYA AİT EVENTLER
-    var now = DateTime.Now;
+        // 📅 TAKVİM – KAYITLI+FAV etkinlikler
+        var now = DateTime.Now;
 
-   // Kullanıcının KAYITLI olduğu etkinlikler
-    var userEvents = user.Favorites?
-        .Where(f => f.Event != null && f.Event.EventDate.Month == now.Month && f.Event.EventDate.Year == now.Year)
-        .GroupBy(f => f.Event!.EventDate.Day)
-        .ToDictionary(
-            g => g.Key,
-            g => g.Select(x => x.Event!.Title).ToList()
-        ) 
-        ?? new Dictionary<int, List<string>>();
+        //  Kayıtlı etkinlikler
+        var registeredEvents = user.UserEvent?
+            .Where(ue => ue.Event != null
+                && ue.Event.EventDate.Month == now.Month
+                && ue.Event.EventDate.Year == now.Year)
+            .Select(ue => ue.Event!)
+            ?? Enumerable.Empty<Event>();
 
-    var calendar = new CalendarViewModel
-    {
-        Year = now.Year,
-        Month = now.Month,
-        EventsByDay = userEvents
-    };
+        //  Favori etkinlikler
+        var favoriteEvents = user.Favorites?
+            .Where(f => f.Event != null
+                && f.Event.EventDate.Month == now.Month
+                && f.Event.EventDate.Year == now.Year)
+            .Select(f => f.Event!)
+            ?? Enumerable.Empty<Event>();
 
-    ViewBag.Calendar = calendar;
+        //  Birleştir + tekrarları kaldır
+        var calendarEvents = registeredEvents
+            .Concat(favoriteEvents)
+            .DistinctBy(e => e.EventId);
 
-    return View(user);
-}
+        //  Gün bazlı grupla
+        var eventsByDay = calendarEvents
+            .GroupBy(e => e.EventDate.Day)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(e => e.Title).ToList()
+            );
+
+        var calendar = new CalendarViewModel
+        {
+            Year = now.Year,
+            Month = now.Month,
+            EventsByDay = eventsByDay
+        };
+
+        ViewBag.Calendar = calendar;
+
+        return View(user);
+    }
 
     // GET: Profile/Edit 
     [Authorize]
