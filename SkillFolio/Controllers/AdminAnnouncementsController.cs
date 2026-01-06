@@ -29,7 +29,7 @@ public class AdminAnnouncementsController : Controller
     public IActionResult Create()
     {
         // ❌ Event Reminder (AnnouncementGroupId = 3) admin tarafından seçilemez
-        ViewBag.Groups = _context.AnnouncementGroups
+        ViewBag.Groups = _context.AnnouncementGroups //school, department +/  remainder - 
             .Where(g => g.AnnouncementGroupId != 3)
             .ToList();
 

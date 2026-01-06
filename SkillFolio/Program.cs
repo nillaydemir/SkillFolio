@@ -109,16 +109,16 @@ static async Task SeedData(IServiceProvider serviceProvider)
 
     var newCategories = new List<string>
     {
-        "Yaz�l�m Geli�tirme (Web/Mobil)",
+        "Yazılım Gelistirme (Web/Mobil)",
         "Veri Bilimi ve Yapay Zeka",
         "Bulut Teknolojileri (AWS, Azure)",
         "Dijital Pazarlama ve SEO",
-        "Grafik Tasar�m ve UI/UX",
+        "Grafik Tasarım ve UI/UX",
         "Finans ve Ekonomi",
-        "Kariyer ve Ki�isel Geli�im",
-        "Giri�imcilik ve �novasyon",
+        "Kariyer ve Kisisel Gelisim",
+        "Girisimcilik ve Inovasyon",
         "Biyoloji ve Ya�am Bilimleri",
-        "Sanat ve Yarat�c�l�k"
+        "Sanat ve Yaratıcılık"
     };
 
     foreach (var categoryName in newCategories)
@@ -129,7 +129,7 @@ static async Task SeedData(IServiceProvider serviceProvider)
             {
                 Name = categoryName,
               
-                Description = $"Bu, {categoryName} kategorisine ait genel bir a��klamad�r."
+                Description = $"Bu, {categoryName} kategorisine ait genel bir acıklamad�r."
             });
         }
     }
@@ -153,6 +153,6 @@ static async Task SeedData(IServiceProvider serviceProvider)
         });
     }
 
-    // De�i�iklikleri veritaban�na kaydet
+    // Degısiklikleri veritabanına kaydet
     await context.SaveChangesAsync();
 }

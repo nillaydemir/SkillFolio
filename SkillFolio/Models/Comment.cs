@@ -6,7 +6,7 @@ namespace SkillFolio.Models
     public class Comment
     {
         [Key]
-        public int CommentId { get; set; }
+        public int CommentId { get; set; } //silme bu id ile 
 
         [Required(ErrorMessage = "Yorum içeriği boş bırakılamaz.")]
         [StringLength(500)]

@@ -1,5 +1,4 @@
 using SkillFolio.Models;
-using System.Collections.Generic;
 
 namespace SkillFolio.ViewModels
 {

@@ -43,6 +43,7 @@ namespace SkillFolio.ViewModels
         [Display(Name = "Bitiş Yılı")]
         public int? EndYear { get; set; } // Mock-up'ta zorunlu olmasına rağmen, mantıksal olarak nullable bıraktık.
 
+        //Compare- ASP.NET otomatik olarak Passwprd ve ComfirmPassword karşılaştırır
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Şifre")]
