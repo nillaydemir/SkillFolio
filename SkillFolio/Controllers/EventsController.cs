@@ -28,7 +28,7 @@ namespace SkillFolio.Controllers
 
         // List
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string sortOrder, string searchString,string eventType)
+        public async Task<IActionResult> Index(string sortOrder, string searchString,string eventType) //giriş yapmadan eriş
         {
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
             ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
@@ -75,6 +75,7 @@ namespace SkillFolio.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
+                //Sertifika yüklemeden yorum yapılamaz
                 var userId = _userManager.GetUserId(User);
 
                 bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
@@ -94,7 +95,7 @@ namespace SkillFolio.Controllers
             return View(@event);
         }
 
-        // 3. CREATE (GET/POST) - SADECE Admin
+        // CREATE (GET/POST) - SADECE Admin
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -138,7 +139,7 @@ namespace SkillFolio.Controllers
             return View(model);
         }
 
-        // 4. UPDATE (GET/POST) - SADECE Admin
+        // UPDATE (GET/POST) - SADECE Admin
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -277,11 +278,7 @@ namespace SkillFolio.Controllers
                     System.IO.File.Delete(oldPath);
                 }
             }
-        }
-
-  
-
-   
+        } 
         public class CommentViewModel
         {
             [Required] public int EventId { get; set; }
@@ -297,7 +294,6 @@ namespace SkillFolio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComment(CommentViewModel model)
         {
-            
             var userId = _userManager.GetUserId(User);
 
             bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);

@@ -35,7 +35,7 @@ namespace SkillFolio.Controllers
                 Month = now.Month,
                 EventsByDay = await _context.Events
                     .Where(e => 
-                    e.DatePosted.Month == now.Month && 
+                    e.EventDate.Month == now.Month && 
                     e.EventDate.Year == now.Year)
                     .GroupBy(e => e.EventDate.Day)
                     .Select(g => new

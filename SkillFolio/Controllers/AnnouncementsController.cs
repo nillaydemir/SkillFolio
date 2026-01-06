@@ -1,13 +1,10 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
 using SkillFolio.ViewModels;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SkillFolio.Controllers
 {
@@ -36,7 +33,7 @@ namespace SkillFolio.Controllers
                 .Where(f => f.ApplicationUserId == userId)
                 .Include(f => f.Event)
                 .Select(f => f.Event)
-                .Where(e => e != null && e.EventDate >= today && e.EventDate <= nextWeek)
+                .Where(e => e != null && e.EventDate >= today && e.EventDate <= nextWeek) //tarihe göre sırala
                 .OrderBy(e => e!.EventDate)
                 .ToListAsync();
 

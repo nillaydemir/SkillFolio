@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -59,8 +58,8 @@ public class ProfileController : Controller
 
         //  Birleştir + tekrarları kaldır
         var calendarEvents = registeredEvents
-            .Concat(favoriteEvents)
-            .DistinctBy(e => e.EventId);
+            .Concat(favoriteEvents) //birleştir (.Concat)
+            .DistinctBy(e => e.EventId); //EventId farklı olanlar (.DistinctBy)
 
         //  Gün bazlı grupla
         var eventsByDay = calendarEvents
@@ -92,7 +91,6 @@ public class ProfileController : Controller
             return NotFound($"Kullanıcı yüklenemedi.");
         }
 
-        
         var viewModel = new ProfileEditViewModel
         {
             FirstName = user.FirstName,
@@ -119,7 +117,6 @@ public class ProfileController : Controller
         {
             return NotFound();
         }
-
       
         if (!ModelState.IsValid)
         {
@@ -212,7 +209,7 @@ public class ProfileController : Controller
                 string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "certificates");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
-                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.CertificateFile.FileName;
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.CertificateFile.FileName; //xxxx_certificate.pdf - isim çakışması engeller
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
