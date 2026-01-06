@@ -5,25 +5,68 @@
 }
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!--  YENİ DUYURU GRUBU  -->
+    <div class="card p-3 mb-4">
+        <h5 class="card-title">➕ Yeni Duyuru Grubu Oluştur</h5>
+
+        <form asp-action="CreateGroup" method="post" class="row g-2">
+            @Html.AntiForgeryToken()
+
+            <div class="col-md-5">
+                <input type="text"
+                       name="name"
+                       class="form-control"
+                       placeholder="Grup adı (örn: Bilgisayar Mühendisliği)"
+                       required />
+            </div>
+
+            <div class="col-md-4">
+                <select name="groupType" class="form-select" required>
+                    <option value="">-- Grup Türü --</option>
+                    <option value="School">Okul</option>
+                    <option value="Department">Bölüm</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100">
+                    Oluştur
+                </button>
+            </div>
+        </form>
+
+        <small class="text-muted">
+            Grup, kullanıcı profil bilgileriyle eşleşen kullanıcılara gösterilir.
+        </small>
+
+        @if (TempData["GroupSuccess"] != null)
+        {
+            <div class="alert alert-success mt-2">
+                @TempData["GroupSuccess"]
+            </div>
+        }
+
+        @if (TempData["GroupError"] != null)
+        {
+            <div class="alert alert-danger mt-2">
+                @TempData["GroupError"]
+            </div>
+        }
+    </div>
+
+    <!--  DUYURULAR  -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Duyuru Yönetimi</h2>
         <a asp-action="CreateAnnouncement" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Yeni Duyuru Oluştur
+            Yeni Duyuru Oluştur
         </a>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (!Model.Any())
+    @if (Model == null || !Model.Any())
     {
         <div class="alert alert-info">
-            <p>Henüz duyuru bulunmamaktadır.</p>
+            Henüz duyuru bulunmamaktadır.
         </div>
     }
     else
@@ -36,7 +79,6 @@
                         <th>Grup</th>
                         <th>Grup Türü</th>
                         <th>Oluşturulma Tarihi</th>
-                        <th>İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,45 +96,12 @@
                                 {
                                     <span class="badge bg-success">Bölüm</span>
                                 }
-                                else
-                                {
-                                    <span class="badge bg-secondary">@announcement.AnnouncementGroup?.GroupType</span>
-                                }
                             </td>
-                            <td>@announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsModal@(announcement.AnnouncementId)">
-                                    <i class="fas fa-eye"></i> Detay
-                                </button>
-                            </td>
+                            <td>@announcement.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
                         </tr>
-
-                        <!-- Details Modal -->
-                        <div class="modal fade" id="detailsModal@(announcement.AnnouncementId)" tabindex="-1" aria-labelledby="detailsModalLabel@(announcement.AnnouncementId)" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="detailsModalLabel@(announcement.AnnouncementId)">@announcement.Title</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p><strong>Grup:</strong> @announcement.AnnouncementGroup?.Name</p>
-                                        <p><strong>Grup Türü:</strong> @announcement.AnnouncementGroup?.GroupType</p>
-                                        <p><strong>Oluşturulma Tarihi:</strong> @announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")</p>
-                                        <hr>
-                                        <p><strong>İçerik:</strong></p>
-                                        <p>@announcement.Content</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     }
                 </tbody>
             </table>
         </div>
     }
 </div>
-

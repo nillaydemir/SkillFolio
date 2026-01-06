@@ -7,7 +7,7 @@ using SkillFolio.Data;
 using SkillFolio.Models;
 using SkillFolio.ViewModels;
 
-using System.ComponentModel.DataAnnotations;
+
 
 
 namespace SkillFolio.Controllers
@@ -16,9 +16,9 @@ namespace SkillFolio.Controllers
     {
         private readonly SkillFolioDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IWebHostEnvironment _hostEnvironment; 
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-    
+
         public EventsController(SkillFolioDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
@@ -28,7 +28,7 @@ namespace SkillFolio.Controllers
 
         // List
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string sortOrder, string searchString,string eventType)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string eventType)
         {
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
             ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
@@ -77,6 +77,7 @@ namespace SkillFolio.Controllers
             {
                 var userId = _userManager.GetUserId(User);
 
+                //yorum yapabilme şartları sağlanıyor mu?
                 bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
                 bool hasCommented = await _context.Comments.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == id);
 
@@ -99,13 +100,13 @@ namespace SkillFolio.Controllers
         public IActionResult Create()
         {
             ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name");
-            return View(new EventViewModel()); 
+            return View(new EventViewModel());
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(EventViewModel model) 
+        public async Task<IActionResult> Create(EventViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -158,13 +159,13 @@ namespace SkillFolio.Controllers
             };
 
             ViewBag.CategoryId = new SelectList(_context.EventCategories, "CategoryId", "Name", @event.CategoryId);
-            return View(viewModel); 
+            return View(viewModel);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, EventViewModel model) 
+        public async Task<IActionResult> Edit(int id, EventViewModel model)
         {
             if (id != model.EventId) return NotFound();
 
@@ -191,7 +192,7 @@ namespace SkillFolio.Controllers
                 @event.CategoryId = model.CategoryId;
                 @event.EventType = model.EventType;
                 @event.EventDate = model.EventDate;
-                @event.ImagePath = newImagePath; 
+                @event.ImagePath = newImagePath;
 
                 try
                 {
@@ -226,7 +227,7 @@ namespace SkillFolio.Controllers
             // Delete.cshtml View'ine Event modelini gönder
             return View(@event);
         }
-        
+
         [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -279,100 +280,89 @@ namespace SkillFolio.Controllers
             }
         }
 
-  
-
-   
-        public class CommentViewModel
-        {
-            [Required] public int EventId { get; set; }
-            [Required]
-            [StringLength(500, MinimumLength = 5, ErrorMessage = "Yorum 5 ile 500 karakter arasında olmalıdır.")]
-            [Display(Name = "Yorumunuz")]
-            public string Content { get; set; } = string.Empty;
-        }
 
         // Yorumu kaydetme
         [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddComment(CommentViewModel model)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> AddComment(CommentViewModel model)
+{
+
+    var userId = _userManager.GetUserId(User);
+
+    bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
+    if (!hasCertificate)
+    {
+        TempData["CommentError"] = "Yorum yapabilmek için önce bu etkinliğe ait sertifikanızı yüklemelisiniz.";
+        return RedirectToAction("Details", new { id = model.EventId });
+    }
+
+    bool hasExistingComment = await _context.Comments.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
+    if (hasExistingComment)
+    {
+        TempData["CommentError"] = "Bu etkinliğe zaten yorum yaptınız. Tekrar yorum yapamazsınız.";
+        return RedirectToAction("Details", new { id = model.EventId });
+    }
+
+    if (ModelState.IsValid)
+    {
+        var comment = new Comment
         {
-            
-            var userId = _userManager.GetUserId(User);
+            EventId = model.EventId,
+            ApplicationUserId = userId,
+            Content = model.Content,
+            DatePosted = DateTime.Now
+        };
+        _context.Comments.Add(comment);
 
-            bool hasCertificate = await _context.Certificates.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
-            if (!hasCertificate)
-            {
-                TempData["CommentError"] = "Yorum yapabilmek için önce bu etkinliğe ait sertifikanızı yüklemelisiniz.";
-                return RedirectToAction("Details", new { id = model.EventId });
-            }
-
-            bool hasExistingComment = await _context.Comments.AnyAsync(c => c.ApplicationUserId == userId && c.EventId == model.EventId);
-            if (hasExistingComment)
-            {
-                TempData["CommentError"] = "Bu etkinliğe zaten yorum yaptınız. Tekrar yorum yapamazsınız.";
-                return RedirectToAction("Details", new { id = model.EventId });
-            }
-
-            if (ModelState.IsValid)
-            {
-                var comment = new Comment
-                {
-                    EventId = model.EventId,
-                    ApplicationUserId = userId,
-                    Content = model.Content,
-                    DatePosted = DateTime.Now
-                };
-                _context.Comments.Add(comment);
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Yorumunuz başarıyla kaydedildi!";
-                }
-                catch (Exception)
-                {
-                    TempData["CommentError"] = "Yorum kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.";
-                }
-            }
-
-            return RedirectToAction("Details", new { id = model.EventId });
-        }
-
-
-        // FAVORİ EKLEME/ÇIKARMA
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleFavorite(int eventId)
+        try
         {
-            var userId = _userManager.GetUserId(User);
-
-            var existingFavorite = await _context.Favorites
-                .FirstOrDefaultAsync(f => f.EventId == eventId && f.ApplicationUserId == userId);
-
-            if (existingFavorite != null)
-            {
-                _context.Favorites.Remove(existingFavorite);
-            }
-            else
-            {
-                var newFavorite = new Favorite
-                {
-                    EventId = eventId,
-                    ApplicationUserId = userId,
-                    DateFavorited = DateTime.Now
-                };
-                _context.Favorites.Add(newFavorite);
-            }
-
             await _context.SaveChangesAsync();
-            return RedirectToAction("Details", new { id = eventId });
+            TempData["SuccessMessage"] = "Yorumunuz başarıyla kaydedildi!";
         }
-
-        private bool EventExists(int id)
+        catch (Exception)
         {
-            return _context.Events.Any(e => e.EventId == id);
+            TempData["CommentError"] = "Yorum kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.";
         }
+    }
+
+    return RedirectToAction("Details", new { id = model.EventId });
+}
+
+
+// FAVORİ EKLEME/ÇIKARMA
+[Authorize]
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ToggleFavorite(int eventId)
+{
+    var userId = _userManager.GetUserId(User);
+
+    var existingFavorite = await _context.Favorites
+        .FirstOrDefaultAsync(f => f.EventId == eventId && f.ApplicationUserId == userId);
+
+    if (existingFavorite != null)
+    {
+        _context.Favorites.Remove(existingFavorite);
+    }
+    else
+    {
+        var newFavorite = new Favorite
+        {
+            EventId = eventId,
+            ApplicationUserId = userId,
+            DateFavorited = DateTime.Now
+        };
+        _context.Favorites.Add(newFavorite);
+    }
+
+    await _context.SaveChangesAsync();
+    return RedirectToAction("Details", new { id = eventId });
+}
+
+private bool EventExists(int id)
+{
+    return _context.Events.Any(e => e.EventId == id);
+}
     }
 }

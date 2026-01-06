@@ -5,33 +5,32 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SkillFolio.Controllers
 {
-    //sadece admin rolündekiler 
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SkillFolioDbContext _context;
 
-        public AdminController(UserManager<ApplicationUser> userManager, SkillFolioDbContext context)
+        public AdminController(
+            UserManager<ApplicationUser> userManager,
+            SkillFolioDbContext context)
         {
             _userManager = userManager;
             _context = context;
         }
 
-        // Admin Paneli Ana Sayfası
         public IActionResult Index()
         {
-            ViewData["Title"] = "Admin Yönetim Paneli";
-
             return View();
         }
 
-        // Admin Announcements Management
+        // ANNOUNCEMENTS
         public async Task<IActionResult> Announcements()
         {
             var announcements = await _context.Announcements
@@ -42,91 +41,103 @@ namespace SkillFolio.Controllers
             return View(announcements);
         }
 
-        // GET: Admin/CreateAnnouncement
-        public async Task<IActionResult> CreateAnnouncement()
+        //  CREATE GROUP 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateGroup(string name, string groupType)
         {
-            var groups = await _context.AnnouncementGroups
-                .Where(g => g.GroupType == "School" || g.GroupType == "Department")
-                .ToListAsync();
-
-            if (!groups.Any())
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(groupType))
             {
-                // If groups don't exist, seed them
-                if (!await _context.AnnouncementGroups.AnyAsync(g => g.GroupType == "School"))
-                {
-                    _context.AnnouncementGroups.Add(new AnnouncementGroup
-                    {
-                        Name = "Okul Duyuruları",
-                        GroupType = "School"
-                    });
-                }
-
-                if (!await _context.AnnouncementGroups.AnyAsync(g => g.GroupType == "Department"))
-                {
-                    _context.AnnouncementGroups.Add(new AnnouncementGroup
-                    {
-                        Name = "Bölüm Duyuruları",
-                        GroupType = "Department"
-                    });
-                }
-
-                await _context.SaveChangesAsync();
-                groups = await _context.AnnouncementGroups
-                    .Where(g => g.GroupType == "School" || g.GroupType == "Department")
-                    .ToListAsync();
+                TempData["GroupError"] = "Grup adı ve türü zorunludur.";
+                return RedirectToAction(nameof(CreateAnnouncement));
             }
 
-            ViewBag.AnnouncementGroupId = new SelectList(groups, "AnnouncementGroupId", "Name");
+            bool exists = await _context.AnnouncementGroups
+                .AnyAsync(g => g.Name == name && g.GroupType == groupType);
+
+            if (exists)
+            {
+                TempData["GroupError"] = "Bu grup zaten mevcut.";
+                return RedirectToAction(nameof(CreateAnnouncement));
+            }
+
+            _context.AnnouncementGroups.Add(new AnnouncementGroup
+            {
+                Name = name,
+                GroupType = groupType
+            });
+
+            await _context.SaveChangesAsync();
+
+            TempData["GroupSuccess"] = "Duyuru grubu oluşturuldu.";
+            return RedirectToAction(nameof(CreateAnnouncement));
+        }
+
+        //  CREATE ANNOUNCEMENT (GET) 
+        public async Task<IActionResult> CreateAnnouncement()
+        {
+            var groups = await EnsureBaseGroupsAsync();
+
+            ViewBag.AnnouncementGroupId = new SelectList(
+                groups,
+                "AnnouncementGroupId",
+                "Name"
+            );
+
             return View();
         }
 
-        // POST: Admin/CreateAnnouncement
+        //  CREATE ANNOUNCEMENT (POST) 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAnnouncement(Announcement announcement)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                announcement.CreatedAt = System.DateTime.Now;
-                _context.Add(announcement);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Duyuru başarıyla oluşturuldu!";
-                return RedirectToAction(nameof(Announcements));
+                var groups = await EnsureBaseGroupsAsync();
+                ViewBag.AnnouncementGroupId = new SelectList(
+                    groups,
+                    "AnnouncementGroupId",
+                    "Name",
+                    announcement.AnnouncementGroupId
+                );
+
+                return View(announcement);
             }
 
-            var groups = await _context.AnnouncementGroups
-                .Where(g => g.GroupType == "School" || g.GroupType == "Department")
-                .ToListAsync();
+            announcement.CreatedAt = DateTime.Now;
 
-            if (!groups.Any())
+            _context.Announcements.Add(announcement);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Duyuru başarıyla oluşturuldu.";
+            return RedirectToAction(nameof(Announcements));
+        }
+
+        // ilk başta db de hata almamak için)
+        private async Task<IQueryable<AnnouncementGroup>> EnsureBaseGroupsAsync()
+        {
+            if (!await _context.AnnouncementGroups.AnyAsync(g => g.GroupType == "School"))
             {
-                // If groups don't exist, seed them
-                if (!await _context.AnnouncementGroups.AnyAsync(g => g.GroupType == "School"))
+                _context.AnnouncementGroups.Add(new AnnouncementGroup
                 {
-                    _context.AnnouncementGroups.Add(new AnnouncementGroup
-                    {
-                        Name = "Okul Duyuruları",
-                        GroupType = "School"
-                    });
-                }
-
-                if (!await _context.AnnouncementGroups.AnyAsync(g => g.GroupType == "Department"))
-                {
-                    _context.AnnouncementGroups.Add(new AnnouncementGroup
-                    {
-                        Name = "Bölüm Duyuruları",
-                        GroupType = "Department"
-                    });
-                }
-
-                await _context.SaveChangesAsync();
-                groups = await _context.AnnouncementGroups
-                    .Where(g => g.GroupType == "School" || g.GroupType == "Department")
-                    .ToListAsync();
+                    Name = "Okul Duyuruları",
+                    GroupType = "School"
+                });
             }
 
-            ViewBag.AnnouncementGroupId = new SelectList(groups, "AnnouncementGroupId", "Name", announcement.AnnouncementGroupId);
-            return View(announcement);
+            if (!await _context.AnnouncementGroups.AnyAsync(g => g.GroupType == "Department"))
+            {
+                _context.AnnouncementGroups.Add(new AnnouncementGroup
+                {
+                    Name = "Bölüm Duyuruları",
+                    GroupType = "Department"
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return _context.AnnouncementGroups;
         }
     }
 }
