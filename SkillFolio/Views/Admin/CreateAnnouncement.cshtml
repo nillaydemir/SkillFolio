@@ -9,8 +9,12 @@
 
     <div class="row">
         <div class="col-md-8">
+
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+            <!-- DOĞRU ACTION -->
             <form asp-action="CreateAnnouncement" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @Html.AntiForgeryToken()
 
                 <div class="mb-3">
                     <label asp-for="Title" class="form-label"></label>
@@ -26,17 +30,26 @@
 
                 <div class="mb-3">
                     <label asp-for="AnnouncementGroupId" class="form-label"></label>
-                    <select asp-for="AnnouncementGroupId" class="form-select" asp-items="ViewBag.AnnouncementGroupId">
+
+                    <!-- DROPDOWN BAĞLANTI -->
+                    <select asp-for="AnnouncementGroupId"
+                            asp-items="ViewBag.AnnouncementGroupId"
+                            class="form-select">
                         <option value="">-- Grup Seçin --</option>
                     </select>
+
                     <span asp-validation-for="AnnouncementGroupId" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Duyuru Oluştur
+                        Duyuru Oluştur
                     </button>
-                    <a asp-action="Announcements" class="btn btn-secondary">İptal</a>
+
+                    <!-- Admin geri dönüş -->
+                    <a asp-action="Announcements" class="btn btn-secondary">
+                        İptal
+                    </a>
                 </div>
             </form>
         </div>
@@ -44,6 +57,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
-

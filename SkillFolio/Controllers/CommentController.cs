@@ -22,6 +22,8 @@ public class CommentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
+
+        //yorumu bul
         var comment = await _context.Comments
             .Include(c => c.Event) // Yönlendirme için Event'i dahil et
             .FirstOrDefaultAsync(c => c.CommentId == id);
@@ -32,6 +34,7 @@ public class CommentsController : Controller
             return RedirectToAction("Index", "Events");
         }
 
+        //kim silmek istiyo
         var userId = _userManager.GetUserId(User);
         bool isAdmin = User.IsInRole("Admin");
         int eventId = comment.EventId;

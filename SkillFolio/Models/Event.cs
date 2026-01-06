@@ -7,8 +7,6 @@ namespace SkillFolio.Models
         
         [Key]
         public int EventId { get; set; }
-
-      
         public ICollection<Comment>? Comments { get; set; }
 
       

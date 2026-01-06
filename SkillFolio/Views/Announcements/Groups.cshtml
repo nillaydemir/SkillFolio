@@ -14,25 +14,15 @@
                 <h4 class="mb-0">Okul Duyuruları</h4>
             </div>
             <div class="card-body">
-                @if (Model.SchoolAnnouncements.Any())
+                @foreach (var announcement in Model.SchoolAnnouncements)
                 {
-                    <div class="list-group">
-                        @foreach (var announcement in Model.SchoolAnnouncements)
-                        {
-                            <div class="list-group-item">
-                                <h5 class="mb-1">@announcement.Title</h5>
-                                <p class="mb-1">@announcement.Content</p>
-                                <small class="text-muted">@announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")</small>
-                                <div class="mt-2">
-                                    <a asp-action="Details" asp-route-id="@announcement.AnnouncementId" class="btn btn-sm btn-outline-primary">Detay Gör</a>
-                                </div>
-                            </div>
-                        }
+                    <div class="list-group-item mb-2">
+                        <h5>@announcement.Title</h5>
+                        <p>@announcement.Content</p>
+                        <small class="text-muted">
+                            @announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")
+                        </small>
                     </div>
-                }
-                else
-                {
-                    <p class="text-muted">Henüz okul duyurusu bulunmamaktadır.</p>
                 }
             </div>
         </div>
@@ -45,25 +35,15 @@
                 <h4 class="mb-0">Bölüm Duyuruları</h4>
             </div>
             <div class="card-body">
-                @if (Model.DepartmentAnnouncements.Any())
+                @foreach (var announcement in Model.DepartmentAnnouncements)
                 {
-                    <div class="list-group">
-                        @foreach (var announcement in Model.DepartmentAnnouncements)
-                        {
-                            <div class="list-group-item">
-                                <h5 class="mb-1">@announcement.Title</h5>
-                                <p class="mb-1">@announcement.Content</p>
-                                <small class="text-muted">@announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")</small>
-                                <div class="mt-2">
-                                    <a asp-action="Details" asp-route-id="@announcement.AnnouncementId" class="btn btn-sm btn-outline-primary">Detay Gör</a>
-                                </div>
-                            </div>
-                        }
+                    <div class="list-group-item mb-2">
+                        <h5>@announcement.Title</h5>
+                        <p>@announcement.Content</p>
+                        <small class="text-muted">
+                            @announcement.CreatedAt.ToString("dd MMMM yyyy HH:mm")
+                        </small>
                     </div>
-                }
-                else
-                {
-                    <p class="text-muted">Henüz bölüm duyurusu bulunmamaktadır.</p>
                 }
             </div>
         </div>
@@ -72,8 +52,7 @@
     @if (!Model.HasSchoolGroup && !Model.HasDepartmentGroup)
     {
         <div class="alert alert-warning">
-            <p>Profil bilgilerinizde okul veya bölüm bilgisi bulunmadığı için duyuru grubuna erişiminiz bulunmamaktadır.</p>
+            Profil bilgilerinizle eşleşen duyuru grubu bulunamadı.
         </div>
     }
 </div>
-
