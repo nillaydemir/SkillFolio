@@ -80,7 +80,6 @@ SkillFolio, **ASP.NET Core MVC** mimarisi üzerine kurulmuş, rol tabanlı bir w
 - ASP.NET Core MVC  
 - Entity Framework Core (Code First)  
 - Microsoft SQL Server / LocalDB  
-- Razor Pages  
 - Bootstrap  
 - HTML / CSS / JavaScript  
 - LINQ  
