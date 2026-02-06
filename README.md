@@ -146,18 +146,17 @@ SkillFolio
 
 ## 🖥️ Ekran Görüntüleri
 
-<img width="1660" alt="Ana Sayfa" src="LINK_1" />
+<img width="1660" alt="Ana Sayfa" src="https://github.com/user-attachments/assets/0ef70b88-48b6-4514-a095-1aabe4f98b82" />
 
-<img width="1656" alt="Etkinlikler" src="LINK_2" />
+<img width="1656" alt="Etkinlikler" src="https://github.com/user-attachments/assets/3459204d-c787-4de0-bcab-4025fcef14c5" />
 
-<img width="1652" alt="Admin Paneli" src="LINK_3" />
+<img width="1668" alt="Profil Sayfası" src="https://github.com/user-attachments/assets/3a152813-cf2f-4859-9778-a6a310819ec1" />
 
-<img width="1652" alt="Kayıt Sayfası" src="LINK_4" />
+<img width="1652" alt="Admin Paneli" src="https://github.com/user-attachments/assets/eebe96c4-8f42-45e9-8fd5-157956de3825" />
 
-<img width="1654" alt="Giriş Sayfası" src="LINK_5" />
+<img width="1652" alt="Kayıt Sayfası" src="https://github.com/user-attachments/assets/05a80c6c-101e-4a7f-bc48-a0643ced8d8c" />
 
-<img width="1668" alt="Profil Sayfası" src="LINK_6" />
-
+<img width="1654" alt="Giriş Sayfası" src="https://github.com/user-attachments/assets/a197772e-55d0-4c1e-be61-e7948997c33d" />
 
 ---
 
