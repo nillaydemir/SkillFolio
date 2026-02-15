@@ -1,4 +1,4 @@
-namespace SkillFolio.Models
+namespace SkillFolio.ViewModels
 {
     public class ErrorViewModel
     {

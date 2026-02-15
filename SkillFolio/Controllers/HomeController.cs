@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.ViewModels;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity; 
 namespace SkillFolio.Controllers
 {
@@ -52,9 +49,5 @@ namespace SkillFolio.Controllers
             return View(featuredEvents);
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
     }
 }

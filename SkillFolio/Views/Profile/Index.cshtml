@@ -39,13 +39,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <div class="card card-body bg-light border-dark">
-                            <h5>Kullanıcı Denetimi</h5>
-                            <p class="small text-muted">Roller ve kullanıcılar.</p>
-                            <button class="btn btn-secondary btn-sm" disabled>Kullanıcı Listesi (Eksik)</button>
-                        </div>
-                    </div>
+                    
 
                     <div class="col-md-4 mb-3">
                         <div class="card card-body bg-light border-dark">
@@ -53,7 +47,6 @@
                             <ul class="list-unstyled small">
                                 <li>Toplam Etkinlik: @Context.Events.Count()</li>
                                 <li>Toplam Kullanıcı: @UserManager.Users.Count()</li>
-                                <li>Toplam Sertifika: @Context.Certificates.Count()</li>
                             </ul>
                         </div>
                     </div>
@@ -157,6 +150,7 @@
                 {
                     <div class="alert alert-info small">
                         Henüz onaylı etkinliğiniz yok.
+                        <a asp-controller="Profile" asp-action="UploadCertificate" class="btn btn-outline-danger btn-sm mt-2">Yeni Sertifika Ekle</a>
                     </div>
                 }
             </div>
@@ -196,12 +190,35 @@
                 }
             </div>
 
-            <div class="card p-4 shadow-sm border-0">
-                <h5 class="text-secondary">Önerilen Eğitimler</h5>
-                <p class="text-muted small">
-                    Profil bilgilerinize göre önerilecektir.
-                </p>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🎯 Sana Önerilen Etkinlikler</h5>
+                </div>
+
+                <div class="card-body">
+                    @if (ViewBag.RecommendedEvents != null && ViewBag.RecommendedEvents.Count > 0)
+                    {
+                        foreach (var ev in ViewBag.RecommendedEvents)
+                        {
+                            <div class="border rounded p-2 mb-2">
+                                <strong>@ev.Title</strong>
+                                <div class="text-muted small">
+                                    📅 @ev.EventDate.ToShortDateString()
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            İlgi alanlarınıza göre şu an önerilen bir etkinlik bulunamadı.
+                            <br />
+                            Daha fazla etkinliği favorileyerek önerileri artırabilirsiniz.
+                        </div>
+                    }
+                </div>
             </div>
+
         </div>
     }
 </div>

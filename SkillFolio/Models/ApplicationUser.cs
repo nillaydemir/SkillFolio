@@ -36,7 +36,6 @@ namespace SkillFolio.Models
         [Display(Name = "Doğum Tarihi")]
         public DateTime BirthDate { get; set; }
 
-     
         public ICollection<Certificate>? Certificates { get; set; } 
         public ICollection<Favorite>? Favorites { get; set; }
         public ICollection<UserEvent> UserEvent { get; set; }

@@ -10,7 +10,7 @@
     @if (!Model.Any())
     {
         <div class="alert alert-info">
-            <p>Yaklaşan 7 gün içinde favorilediğiniz etkinlik bulunmamaktadır.</p>
+            Yaklaşan 7 gün içinde favorilediğiniz etkinlik bulunmamaktadır.
         </div>
     }
     else
@@ -23,9 +23,13 @@
                         <div class="card-body">
                             <h5 class="card-title">@eventItem.Title</h5>
                             <p class="card-text">
-                                <strong>Etkinlik Tarihi:</strong> @eventItem.EventDate.ToString("dd MMMM yyyy")
+                                <strong>Etkinlik Tarihi:</strong>
+                                @eventItem.EventDate.ToString("dd MMMM yyyy")
                             </p>
-                            <a asp-controller="Events" asp-action="Details" asp-route-id="@eventItem.EventId" class="btn btn-primary">
+                            <a asp-controller="Events"
+                               asp-action="Details"
+                               asp-route-id="@eventItem.EventId"
+                               class="btn btn-primary">
                                 Etkinlik Detayları
                             </a>
                         </div>

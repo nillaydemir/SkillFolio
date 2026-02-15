@@ -1,13 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillFolio.Data;
 using SkillFolio.Models;
 using SkillFolio.ViewModels;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace SkillFolio.Controllers
 {
@@ -17,95 +15,95 @@ namespace SkillFolio.Controllers
         private readonly SkillFolioDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public AnnouncementsController(SkillFolioDbContext context, UserManager<ApplicationUser> userManager)
+        public AnnouncementsController(
+         SkillFolioDbContext context,
+         UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
-
-        // INDEX - Shows only favorited events with EventDate between today and today+7 days
         public async Task<IActionResult> Index()
         {
-            var userId = _userManager.GetUserId(User);
-            if (userId == null) return Unauthorized();
+            // Admin ayrı kalsın 
+            if (User.IsInRole("Admin"))
+                return RedirectToAction("Index", "Admin");
+
+
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return View(new List<Event>()); // ASLA NULL DÖNME
 
             var today = DateTime.Today;
             var nextWeek = today.AddDays(7);
 
-            var favoritedEvents = await _context.Favorites
-                .Where(f => f.ApplicationUserId == userId)
+            var events = await _context.Favorites
+                .Where(f => f.ApplicationUserId == user.Id)
                 .Include(f => f.Event)
                 .Select(f => f.Event)
-                .Where(e => e != null && e.EventDate >= today && e.EventDate <= nextWeek)
-                .OrderBy(e => e!.EventDate)
+                .Where(e =>
+                    e != null &&
+                    e.EventDate >= today &&
+                    e.EventDate <= nextWeek)
+                .OrderBy(e => e.EventDate)
                 .ToListAsync();
 
-            return View(favoritedEvents);
+            return View(events); 
         }
 
-        // GROUPS - Shows School and Department announcement groups
+     
+
+        // Announcements groups
         public async Task<IActionResult> Groups()
         {
-            var userId = _userManager.GetUserId(User);
-            if (userId == null) return Unauthorized();
+            // Admin buraya girmesin
+            if (User.IsInRole("Admin"))
+                return RedirectToAction("Index", "Admin");
 
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return NotFound();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
 
-            var viewModel = new AnnouncementGroupsViewModel
+            var viewModel = new AnnouncementGroupsViewModel();
+
+            // ===== OKUL DUYURULARI =====
+            if (!string.IsNullOrEmpty(user.SchoolName))
             {
-                HasSchoolGroup = !string.IsNullOrEmpty(user.SchoolName),
-                HasDepartmentGroup = !string.IsNullOrEmpty(user.Department)
-            };
+                var schoolAnnouncements = await _context.Announcements
+                    .Include(a => a.AnnouncementGroup)
+                    .Where(a =>
+                        a.AnnouncementGroup.GroupType == "School" &&
+                        a.AnnouncementGroup.Name == user.SchoolName)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .ToListAsync();
 
-            // School announcements
-            if (viewModel.HasSchoolGroup)
-            {
-                var schoolGroup = await _context.AnnouncementGroups
-                    .FirstOrDefaultAsync(g => g.GroupType == "School");
-                
-                if (schoolGroup != null)
+                if (schoolAnnouncements.Any())
                 {
-                    viewModel.SchoolAnnouncements = await _context.Announcements
-                        .Where(a => a.AnnouncementGroupId == schoolGroup.AnnouncementGroupId)
-                        .Include(a => a.AnnouncementGroup)
-                        .OrderByDescending(a => a.CreatedAt)
-                        .ToListAsync();
+                    viewModel.HasSchoolGroup = true;
+                    viewModel.SchoolAnnouncements = schoolAnnouncements;
                 }
             }
 
-            // Department announcements
-            if (viewModel.HasDepartmentGroup)
+            // ===== BÖLÜM DUYURULARI =====
+            if (!string.IsNullOrEmpty(user.Department))
             {
-                var departmentGroup = await _context.AnnouncementGroups
-                    .FirstOrDefaultAsync(g => g.GroupType == "Department");
-                
-                if (departmentGroup != null)
+                var departmentAnnouncements = await _context.Announcements
+                    .Include(a => a.AnnouncementGroup)
+                    .Where(a =>
+                        a.AnnouncementGroup.GroupType == "Department" &&
+                        a.AnnouncementGroup.Name == user.Department)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .ToListAsync();
+
+                if (departmentAnnouncements.Any())
                 {
-                    viewModel.DepartmentAnnouncements = await _context.Announcements
-                        .Where(a => a.AnnouncementGroupId == departmentGroup.AnnouncementGroupId)
-                        .Include(a => a.AnnouncementGroup)
-                        .OrderByDescending(a => a.CreatedAt)
-                        .ToListAsync();
+                    viewModel.HasDepartmentGroup = true;
+                    viewModel.DepartmentAnnouncements = departmentAnnouncements;
                 }
             }
-
             return View(viewModel);
-        }
 
-        // DETAILS - Read-only view for announcements
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
 
-            var announcement = await _context.Announcements
-                .Include(a => a.AnnouncementGroup)
-                .FirstOrDefaultAsync(a => a.AnnouncementId == id);
-
-            if (announcement == null) return NotFound();
-
-            return View(announcement);
         }
     }
 }
-

@@ -1,5 +1,4 @@
 using SkillFolio.Models;
-using System.Collections.Generic;
 
 namespace SkillFolio.ViewModels
 {
@@ -7,8 +6,8 @@ namespace SkillFolio.ViewModels
     {
         public bool HasSchoolGroup { get; set; }
         public bool HasDepartmentGroup { get; set; }
-        public List<Announcement> SchoolAnnouncements { get; set; } = new List<Announcement>();
-        public List<Announcement> DepartmentAnnouncements { get; set; } = new List<Announcement>();
+
+        public List<Announcement> SchoolAnnouncements { get; set; } = new();
+        public List<Announcement> DepartmentAnnouncements { get; set; } = new();
     }
 }
-

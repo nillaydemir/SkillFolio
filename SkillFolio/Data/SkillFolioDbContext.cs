@@ -23,8 +23,6 @@ namespace SkillFolio.Data
         public DbSet<Certificate> Certificates { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
 
-
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

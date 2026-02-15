@@ -153,6 +153,6 @@ static async Task SeedData(IServiceProvider serviceProvider)
         });
     }
 
-    // De�i�iklikleri veritaban�na kaydet
+    // Değişiklikleri veritabanına kaydet
     await context.SaveChangesAsync();
 }

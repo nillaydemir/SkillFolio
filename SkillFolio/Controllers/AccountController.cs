@@ -48,7 +48,7 @@ namespace SkillFolio.Controllers
 
                 if (result.Succeeded)
                 {
-                    // Başarılı kayıttan sonra kullanıcıyı otomatik giriş yap
+                    // Başarılı kayıttan sonra kullanıcı login olur
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
@@ -61,8 +61,8 @@ namespace SkillFolio.Controllers
             return View(model);
         }
 
-        // ---LOGIN---
 
+        // ---LOGIN---
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
